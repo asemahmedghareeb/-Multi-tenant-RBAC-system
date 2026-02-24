@@ -1,0 +1,31 @@
+import { SubscriptionTiers } from './../../api-keys/enums/subscribtion-tiers.enum';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Schema as MongooseSchema } from 'mongoose';
+import { Identity } from 'src/modules/identities/entities/identity.entity';
+import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
+import { AppBaseEntity } from 'src/common/entities/app-base.entity';
+
+@GeneratePermissions()
+@Schema({
+  timestamps: true,
+})
+export class Organization extends AppBaseEntity {
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Identity' })
+  identity: string | Identity;
+
+  @Prop()
+  name: string;
+
+  @Prop({
+    type: String,
+    enum: SubscriptionTiers,
+    default: SubscriptionTiers.FREE,
+  })
+  subscriptionTier: SubscriptionTiers;
+}
+
+export type OrganizationDocument = Organization;
+
+export const OrganizationSchema = SchemaFactory.createForClass(Organization);
+
+OrganizationSchema.index({ identity: 1 }, { unique: true });
