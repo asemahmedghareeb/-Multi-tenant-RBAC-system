@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Role } from './entities/role.enitity';
+import { Role } from './entities/role.entity';
 import { Model } from 'mongoose';
 
 

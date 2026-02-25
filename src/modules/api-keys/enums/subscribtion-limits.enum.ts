@@ -8,11 +8,11 @@ type TierLimit = {
 export const TIER_LIMITS: Record<SubscriptionTiers, TierLimit> = {
   [SubscriptionTiers.FREE]: {
     requestsPerMonth: 1000,
-    maxKeys: 1,
+    maxKeys: 5,
   },
   [SubscriptionTiers.PRO]: {
     requestsPerMonth: 10000,
-    maxKeys: 5,
+    maxKeys: 20,
   },
   [SubscriptionTiers.ENTERPRISE]: {
     requestsPerMonth: 100000,

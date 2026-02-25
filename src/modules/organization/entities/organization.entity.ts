@@ -8,6 +8,8 @@ import { AppBaseEntity } from 'src/common/entities/app-base.entity';
 @GeneratePermissions()
 @Schema({
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 })
 export class Organization extends AppBaseEntity {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Identity' })
@@ -29,3 +31,10 @@ export type OrganizationDocument = Organization;
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);
 
 OrganizationSchema.index({ identity: 1 }, { unique: true });
+
+OrganizationSchema.virtual('apiKeys', {
+  ref: 'ApiKey',
+  localField: '_id',
+  foreignField: 'organization',
+  justOne: false,
+});

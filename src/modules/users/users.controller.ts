@@ -10,31 +10,46 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationDto } from './dto/pagination.dto';
 import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Identity } from '../identities/entities/identity.entity';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @Auth()
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(
+    @Body() createUserDto: CreateUserDto,
+    @CurrentUser() currentUser: Identity,
+  ) {
+    return this.usersService.create(createUserDto, currentUser);
   }
 
+  @Auth()
   @Get()
   findPaginated(@Query() paginationDto: PaginationDto) {
     return this.usersService.find(paginationDto);
   }
 
+  @Auth()
   @Get(':id')
   findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.usersService.findOne(id);
   }
 
+  @Auth()
   @Delete(':id')
-  remove(@Param('id', ParseObjectIdPipe) id: string) {
+  deleteOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.usersService.deleteOne(id);
+  }
+
+  @Auth()
+  @Patch('block/:id')
+  blockUser(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.usersService.blockORUnblockUser(id);
   }
 }

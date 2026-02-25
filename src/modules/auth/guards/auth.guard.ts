@@ -11,7 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Identity } from 'src/modules/identities/entities/identity.entity';
 import { Permission } from 'src/modules/roles/entities/permission.entity';
-import { Role } from 'src/modules/roles/entities/role.enitity';
+import { Role } from 'src/modules/roles/entities/role.entity';
 import { ApiKey } from 'src/modules/api-keys/entities/api-key.entity';
 import { AuthMetadata } from '../../../common/types/auth-metadata.type';
 import { AUTH_METADATA_KEY } from '../decorators/auth.decorator';
@@ -37,7 +37,6 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    // Get auth metadata first
     const authMetadata = this.reflector.get<AuthMetadata>(
       AUTH_METADATA_KEY,
       context.getHandler(),
@@ -61,10 +60,8 @@ export class AuthGuard implements CanActivate {
       identity = await this.validateApiKey(apiKey);
     }
 
-    // Attach user to request
     request.user = identity;
 
-    // If no metadata, allow access
     if (!authMetadata) {
       return true;
     }
@@ -100,22 +97,24 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-
   private async validateToken(token: string): Promise<any> {
     try {
       const payload = await this.jwtService.verifyAsync(token);
-      const tokenExists=await this.userTokenModel.findOne({token});
-      if(!tokenExists){
+      const tokenExists = await this.userTokenModel.findOne({ token });
+      if (!tokenExists) {
         throw new UnauthorizedException('Invalid token');
       }
       const identity = await this.identityModel
         .findById(payload.id)
-        .populate({
-          path: 'role',
-          populate: {
-            path: 'permissions',
+        .populate([
+          { path: 'organization' },
+          {
+            path: 'role',
+            populate: {
+              path: 'permissions',
+            },
           },
-        })
+        ])
         .exec();
 
       if (!identity) {
@@ -160,8 +159,6 @@ export class AuthGuard implements CanActivate {
     }
   }
 
-
-
   private async validateApiKey(Key: string): Promise<any> {
     try {
       const apiKey = await this.apiKeyModel
@@ -205,12 +202,13 @@ export class AuthGuard implements CanActivate {
 
       const identity = await this.identityModel
         .findById((apiKey.organization as Organization).identity.toString())
-        .populate({
-          path: 'role',
-          populate: {
-            path: 'permissions',
+        .populate([
+          { path: 'organization' },
+          {
+            path: 'role',
+            populate: { path: 'permissions' },
           },
-        })
+        ])
         .exec();
 
       if (!identity) {

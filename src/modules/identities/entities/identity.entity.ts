@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import bcrypt from 'bcrypt';
-import { Role } from 'src/modules/roles/entities/role.enitity';
+import { Role } from 'src/modules/roles/entities/role.entity';
 import { UserType } from 'src/modules/auth/enums/user-type.enum';
 import { IdentityStatus } from '../enums/identity-status.enum';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
@@ -51,7 +51,6 @@ export class Identity extends AppBaseEntity {
   role?: string | Role;
 }
 
-// Interface for Identity document instance methods
 export interface IdentityMethods {
   comparePassword(enteredPassword: string): Promise<boolean>;
 }
@@ -62,7 +61,6 @@ export const IdentitySchema = SchemaFactory.createForClass(Identity);
 
 
 
-// virtual realtions to get users/organizations information
 IdentitySchema.virtual('user', {
   ref: 'User',
   localField: '_id',

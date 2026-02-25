@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { identitiesDbModule } from '../identities/db/identities.db.module';
@@ -11,6 +11,7 @@ import { apiKeysDbModule } from '../api-keys/db/api-keys.db.module';
 import { ApiKeysModule } from '../api-keys/api-keys.module';
 import { AuthGuard } from './guards/auth.guard';
 
+@Global()
 @Module({
   imports: [
     identitiesDbModule,
