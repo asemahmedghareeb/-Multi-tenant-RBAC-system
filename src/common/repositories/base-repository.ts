@@ -8,8 +8,11 @@ export class BaseRepository<T extends Document> {
   async findOneOrFail(
     filter: Record<string, any>,
     errorMessage?: string,
+    populate?: PopulateOptions | (string | PopulateOptions)[],
   ): Promise<T> {
-    const result = await this.model.findOne(filter).exec();
+    let query = this.model.findOne(filter);
+    if (populate) query = query.populate(populate);
+    const result = await query.exec();
     if (!result) {
       throw new NotFoundException(errorMessage || 'Entity not found');
     }
@@ -20,8 +23,11 @@ export class BaseRepository<T extends Document> {
   async findOneAndFail(
     filter: Record<string, any>,
     errorMessage?: string,
+    populate?: PopulateOptions | (string | PopulateOptions)[],
   ): Promise<void> {
-    const result = await this.model.findOne(filter).exec();
+    let query = this.model.findOne(filter);
+    if (populate) query = query.populate(populate);
+    const result = await query.exec();
     if (result) {
       throw new ForbiddenException(errorMessage || 'Entity already exists');
     }

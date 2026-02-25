@@ -4,7 +4,6 @@ import { Identity } from 'src/modules/identities/entities/identity.entity';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
 import { AppBaseEntity } from 'src/common/entities/app-base.entity';
 
-
 @GeneratePermissions()
 @Schema({
   timestamps: true,
@@ -15,12 +14,6 @@ export class User extends AppBaseEntity {
 
   @Prop()
   username: string;
-
-  @Prop()
-  profilePicture?: string;
-
-  @Prop()
-  bio?: string;
 }
 
 export type UserDocument = User;
