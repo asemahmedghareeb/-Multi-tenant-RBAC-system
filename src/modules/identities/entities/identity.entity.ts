@@ -51,9 +51,16 @@ export class Identity extends AppBaseEntity {
   role?: string | Role;
 }
 
-export type IdentityDocument = Identity;
+// Interface for Identity document instance methods
+export interface IdentityMethods {
+  comparePassword(enteredPassword: string): Promise<boolean>;
+}
+
+export type IdentityDocument = Identity & IdentityMethods;
 
 export const IdentitySchema = SchemaFactory.createForClass(Identity);
+
+
 
 // virtual realtions to get users/organizations information
 IdentitySchema.virtual('user', {

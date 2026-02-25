@@ -17,4 +17,8 @@ export class AuthHelper {
 
     return token;
   }
+
+  async deleteAllUserTokens(userId: string) {
+    await this.userTokensService.deleteMany({ user: userId });
+  }
 }

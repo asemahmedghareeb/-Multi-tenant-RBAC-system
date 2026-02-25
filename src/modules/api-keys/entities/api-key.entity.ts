@@ -8,6 +8,8 @@ import { AppBaseEntity } from 'src/common/entities/app-base.entity';
 @GeneratePermissions()
 @Schema({
   timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 })
 export class ApiKey extends AppBaseEntity {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Organization' })
@@ -30,4 +32,3 @@ export class ApiKey extends AppBaseEntity {
 export type ApiKeyDocument = ApiKey;
 
 export const ApiKeySchema = SchemaFactory.createForClass(ApiKey);
-

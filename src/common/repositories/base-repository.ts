@@ -1,0 +1,108 @@
+import { NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Model, Document, UpdateQuery, PopulateOptions, SortOrder } from 'mongoose';
+
+export class BaseRepository<T extends Document> {
+  constructor(protected readonly model: Model<T>) {}
+
+  /** Throw NotFoundException when an entity matching options does not exist. */
+  async findOneOrFail(
+    filter: Record<string, any>,
+    errorMessage?: string,
+  ): Promise<T> {
+    const result = await this.model.findOne(filter).exec();
+    if (!result) {
+      throw new NotFoundException(errorMessage || 'Entity not found');
+    }
+    return result;
+  }
+
+  /** Throw ForbiddenException when an entity matching options exists. */
+  async findOneAndFail(
+    filter: Record<string, any>,
+    errorMessage?: string,
+  ): Promise<void> {
+    const result = await this.model.findOne(filter).exec();
+    if (result) {
+      throw new ForbiddenException(errorMessage || 'Entity already exists');
+    }
+  }
+
+  /** Find entities with pagination, sorting, relations (population), and selection. */
+  async findPaginated(
+    filter: Record<string, any> = {},
+    sort?: string | { [key: string]: SortOrder },
+    page: number = 1,
+    limit: number = 15,
+    populate?: PopulateOptions | (string | PopulateOptions)[],
+    select?: string | string[],
+  ) {
+    const skip = (page - 1) * limit;
+
+    const query = this.model.find(filter).skip(skip).limit(limit);
+    
+    if (sort) query.sort(sort);
+    if (populate) query.populate(populate);
+    if (select) query.select(select);
+
+    const [items, total] = await Promise.all([
+      query.exec(),
+      this.model.countDocuments(filter).exec(),
+    ]);
+
+    return {
+      items,
+      pageInfo: {
+        limit,
+        page,
+        hasPrevious: page > 1,
+        hasNext: skip + limit < total,
+        totalCount: total,
+      },
+    };
+  }
+
+  /** Update multiple entities matching filter with input. */
+  async updateMany(
+    filter: Record<string, any>,
+    update: UpdateQuery<T>,
+  ): Promise<T[]> {
+    const entities = await this.model.find(filter).exec();
+    for (const entity of entities) {
+      Object.assign(entity, update);
+      await entity.save();
+    }
+    return entities;
+  }
+
+  /** Soft-delete via update (sets deletedAt and other input). */
+  async softDeleteWithUpdate(
+    filter: Record<string, any>,
+    update: UpdateQuery<T>,
+  ): Promise<T[]> {
+    return this.updateMany(filter, { ...update, deletedAt: new Date() });
+  }
+
+  /** Create and save a single entity. */
+  async createOne(input: Partial<T>): Promise<T> {
+    const entity = new this.model(input);
+    return entity.save();
+  }
+
+  /** Create and save multiple entities. */
+  async bulkCreate(input: Partial<T>[]): Promise<T[]> {
+    const result = await this.model.insertMany(input);
+    return result as unknown as T[]; 
+  }
+
+  /** Update an existing model instance and save it. */
+  async updateOneFromExistingModel(model: T, input: Partial<T>): Promise<T> {
+    Object.assign(model, input);
+    return model.save();
+  }
+
+  /** Delete multiple entities and return affected count. */
+  async deleteMany(filter: Record<string, any>): Promise<number> {
+    const result = await this.model.deleteMany(filter).exec();
+    return result.deletedCount || 0;
+  }
+}

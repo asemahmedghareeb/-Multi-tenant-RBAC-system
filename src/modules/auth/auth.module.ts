@@ -9,6 +9,7 @@ import { UserTokensModule } from '../user-tokens/user-tokens.module';
 import { NodeMailerModule } from '../mailer/mailer.module';
 import { apiKeysDbModule } from '../api-keys/db/api-keys.db.module';
 import { ApiKeysModule } from '../api-keys/api-keys.module';
+import { AuthGuard } from './guards/auth.guard';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ApiKeysModule } from '../api-keys/api-keys.module';
     ApiKeysModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthHelper],
+  providers: [AuthService, AuthHelper, AuthGuard],
+  exports: [AuthGuard, identitiesDbModule, organizationDbModule, apiKeysDbModule],
 })
 export class AuthModule {}
