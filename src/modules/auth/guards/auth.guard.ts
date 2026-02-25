@@ -221,7 +221,6 @@ export class AuthGuard implements CanActivate {
 
       return identity;
     } catch (error) {
-      console.error(error);
       if (
         error instanceof UnauthorizedException ||
         error instanceof ForbiddenException

@@ -1,5 +1,17 @@
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
-import { Model, Document, UpdateQuery, PopulateOptions, SortOrder } from 'mongoose';
+import {
+  Model,
+  Document,
+  UpdateQuery,
+  PopulateOptions,
+  SortOrder,
+} from 'mongoose';
+
+export interface QueryOptions {
+  populate?: PopulateOptions | (string | PopulateOptions)[];
+  lean?: boolean;
+  select?: string | string[];
+}
 
 export class BaseRepository<T extends Document> {
   constructor(protected readonly model: Model<T>) {}
@@ -8,10 +20,13 @@ export class BaseRepository<T extends Document> {
   async findOneOrFail(
     filter: Record<string, any>,
     errorMessage?: string,
-    populate?: PopulateOptions | (string | PopulateOptions)[],
+    options: QueryOptions = {},
   ): Promise<T> {
     let query = this.model.findOne(filter);
+    const { populate, lean, select } = options;
     if (populate) query = query.populate(populate);
+    if (lean) query.lean();
+    if (select) query.select(select);
     const result = await query.exec();
     if (!result) {
       throw new NotFoundException(errorMessage || 'Entity not found');
@@ -23,10 +38,13 @@ export class BaseRepository<T extends Document> {
   async findOneAndFail(
     filter: Record<string, any>,
     errorMessage?: string,
-    populate?: PopulateOptions | (string | PopulateOptions)[],
+    options: QueryOptions = {},
   ): Promise<void> {
+    const { populate, lean, select } = options;
     let query = this.model.findOne(filter);
     if (populate) query = query.populate(populate);
+    if (lean) query.lean();
+    if (select) query.select(select);
     const result = await query.exec();
     if (result) {
       throw new ForbiddenException(errorMessage || 'Entity already exists');
@@ -39,16 +57,17 @@ export class BaseRepository<T extends Document> {
     sort?: string | { [key: string]: SortOrder },
     page: number = 1,
     limit: number = 15,
-    populate?: PopulateOptions | (string | PopulateOptions)[],
-    select?: string | string[],
+    options: QueryOptions = {},
   ) {
     const skip = (page - 1) * limit;
+    const { populate, lean, select } = options;
 
     const query = this.model.find(filter).skip(skip).limit(limit);
-    
+
     if (sort) query.sort(sort);
     if (populate) query.populate(populate);
     if (select) query.select(select);
+    if (lean) query.lean();
 
     const [items, total] = await Promise.all([
       query.exec(),
@@ -97,7 +116,7 @@ export class BaseRepository<T extends Document> {
   /** Create and save multiple entities. */
   async bulkCreate(input: Partial<T>[]): Promise<T[]> {
     const result = await this.model.insertMany(input);
-    return result as unknown as T[]; 
+    return result as unknown as T[];
   }
 
   /** Update an existing model instance and save it. */

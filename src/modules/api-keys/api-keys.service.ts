@@ -90,7 +90,7 @@ export class ApiKeysService extends BaseRepository<ApiKeyDocument> {
       );
     }
 
-    await this.apiKeyModel.deleteOne({ _id: id }).exec();
+    await this.model.deleteOne({ _id: id }).exec();
     return true;
   }
 }

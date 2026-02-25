@@ -60,14 +60,23 @@ export class UsersService extends BaseRepository<UserDocument> {
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
-      { path: 'identity', select: '-password -__v' },
+      {
+        populate: {
+          path: 'identity',
+          select: '-password -__v',
+        },
+        lean: true,
+      },
     );
   }
 
   async findOne(id: string) {
     return await this.findOneOrFail({ _id: id }, 'User not found', {
-      path: 'identity',
-      select: '-password -__v',
+      populate: {
+        path: 'identity',
+        select: '-password -__v',
+      },
+      lean: true,
     });
   }
 
@@ -83,7 +92,10 @@ export class UsersService extends BaseRepository<UserDocument> {
   @Transactional()
   async blockORUnblockUser(id: string) {
     const user = await this.findOneOrFail({ _id: id }, 'User not found', {
-      path: 'identity',
+      populate: {
+        path: 'identity',
+      },
+      lean: true,
     });
 
     const status = (user.identity as Identity).status;
