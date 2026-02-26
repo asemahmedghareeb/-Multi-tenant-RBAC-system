@@ -17,6 +17,8 @@ export abstract class AppBaseEntity extends Document {
    */
   updatedAt?: Date;
 
+  deletedAt?: Date;
+
   /**
    * Returns the entity name in lowercase for permission targeting
    * Override this in child classes if you need a custom target name

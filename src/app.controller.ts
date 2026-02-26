@@ -1,17 +1,20 @@
 import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
-import { Auth } from './modules/auth/decorators/auth.decorator';
-import { CurrentUser } from './modules/auth/decorators/current-user.decorator';
 import { DefaultPermissionActionsEnum } from './common/enums/default-permissions.enum';
-import { User } from './modules/users/entities/user.entity';
-import { Organization } from './modules/organization/entities/organization.entity';
-import { Identity } from './modules/identities/entities/identity.entity';
-import { UserType } from './modules/auth/enums/user-type.enum';
+import { Auth } from './modules/app/auth-base/auth/decorators/auth.decorator';
+import { CurrentUser } from './modules/app/auth-base/auth/decorators/current-user.decorator';
+import { UserType } from './modules/app/auth-base/auth/enums/user-type.enum';
+import { Organization } from './modules/app/organization/entities/organization.entity';
+import { User } from './modules/app/users/entities/user.entity';
+import { Identity } from './modules/app/auth-base/identities/entities/identity.entity';
+import { AppHttpException } from './common/exceptions/app-http.exception';
+import { ErrorCodeEnum } from './common/enums/error-code.enum';
 
 @Controller()
 export class AppController {
   @Auth({ validateToken: true, roles: [UserType.ORGANIZATION] })
   @Get('admin-only')
   adminOnlyEndpoint(@CurrentUser() user: Identity) {
+    throw new AppHttpException(ErrorCodeEnum.BAD_REQUEST_EXCEPTION);
     return { message: 'Only admins can access this', user };
   }
 

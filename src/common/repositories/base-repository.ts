@@ -6,6 +6,8 @@ import {
   PopulateOptions,
   SortOrder,
 } from 'mongoose';
+import { AppHttpException } from '../exceptions/app-http.exception';
+import { ErrorCodeEnum } from '../enums/error-code.enum';
 
 export interface QueryOptions {
   populate?: PopulateOptions | (string | PopulateOptions)[];
@@ -19,7 +21,7 @@ export class BaseRepository<T extends Document> {
   /** Throw NotFoundException when an entity matching options does not exist. */
   async findOneOrFail(
     filter: Record<string, any>,
-    errorMessage?: string,
+    errorMessage?: ErrorCodeEnum,
     options: QueryOptions = {},
   ): Promise<T> {
     let query = this.model.findOne(filter);
@@ -29,7 +31,7 @@ export class BaseRepository<T extends Document> {
     if (select) query.select(select);
     const result = await query.exec();
     if (!result) {
-      throw new NotFoundException(errorMessage || 'Entity not found');
+      throw new AppHttpException(errorMessage || ErrorCodeEnum.NOT_FOUND);
     }
     return result;
   }
@@ -129,5 +131,27 @@ export class BaseRepository<T extends Document> {
   async deleteMany(filter: Record<string, any>): Promise<number> {
     const result = await this.model.deleteMany(filter).exec();
     return result.deletedCount || 0;
+  }
+
+  /** Delete a single entity matching the filter. Returns the deleted document or null. */
+  async deleteOne(filter: Record<string, any>): Promise<T | null> {
+    return this.model.findOneAndDelete(filter).exec();
+  }
+
+  /** Delete a single entity by its ID. Returns the deleted document or null. */
+  async deleteById(id: string): Promise<T | null> {
+    return this.model.findByIdAndDelete(id).exec();
+  }
+
+  /** Delete a single entity or throw NotFoundException if it doesn't exist. */
+  async deleteOneOrFail(
+    filter: Record<string, any>,
+    errorMessage?: string,
+  ): Promise<T> {
+    const result = await this.model.findOneAndDelete(filter).exec();
+    if (!result) {
+      throw new NotFoundException(errorMessage || 'Entity to delete not found');
+    }
+    return result;
   }
 }
