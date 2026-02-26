@@ -12,12 +12,22 @@ export function Transactional() {
       let connection: Connection | undefined;
 
       for (const key in this) {
+        const prop = this[key];
+        if (!prop) continue;
+
+        // Direct Mongoose Model injected
+        if (prop.db && typeof prop.db.transaction === 'function') {
+          connection = prop.db;
+          break;
+        }
+
+        // BaseRepository wrapping a Mongoose Model
         if (
-          this[key] &&
-          this[key].db &&
-          typeof this[key].db.transaction === 'function'
+          prop.model &&
+          prop.model.db &&
+          typeof prop.model.db.transaction === 'function'
         ) {
-          connection = this[key].db;
+          connection = prop.model.db;
           break;
         }
       }

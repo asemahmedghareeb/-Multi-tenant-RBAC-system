@@ -92,7 +92,6 @@ export class UsersService {
         populate: {
           path: 'identity',
         },
-        lean: true,
       },
     );
 
