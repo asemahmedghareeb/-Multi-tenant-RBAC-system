@@ -1,28 +1,29 @@
 import {
-    IsArray,
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    MaxLength,
-    MinLength,
+  IsArray,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
+
 export class AddRoleDto {
-    @MaxLength(20, { message: 'messages.invalidNameLength' })
-    @MinLength(3, { message: 'messages.invalidNameLength' })
-    @IsString({ message: 'messages.invalidName' })
-    @IsNotEmpty({ message: 'messages.nameRequired' })
-    nameAr: string;
+  @MaxLength(20)
+  @MinLength(3)
+  @IsString()
+  @IsNotEmpty()
+  nameAr: string;
 
-    @MaxLength(20, { message: 'messages.invalidNameLength' })
-    @MinLength(3, { message: 'messages.invalidNameLength' })
-    @IsString({ message: 'messages.invalidName' })
-    @IsNotEmpty({ message: 'messages.nameRequired' })
-    nameEn: string;
+  @MaxLength(20)
+  @MinLength(3)
+  @IsString()
+  @IsNotEmpty()
+  nameEn: string;
 
-    @IsArray({ message: 'messages.invalidPermissions' })
-    @IsString({ each: true, message: 'messages.invalidPermission' })
-    @IsNotEmpty({ message: 'messages.permissionsRequired' })
-    @IsOptional()
-    permissions?: string[];
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  @IsOptional()
+  permissions?: string[];
 }

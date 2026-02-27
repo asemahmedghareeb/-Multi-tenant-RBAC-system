@@ -9,6 +9,8 @@ import { AppHttpException } from '../exceptions/app-http.exception';
 import { Request, Response } from 'express';
 import { LangEnum } from '../enums/lang.enum';
 import { AppHelperService } from 'src/modules/core/app-helper/services/app-helper.service';
+import { ThrottlerException } from '@nestjs/throttler';
+import { ErrorCodeEnum } from '../enums/error-code.enum';
 
 
 @Catch()
@@ -20,6 +22,10 @@ export class AppExceptionFilter implements ExceptionFilter {
   catch(exception: AppHttpException, host: ArgumentsHost) {
     if (exception instanceof NotFoundException) {
       exception = new AppHttpException(exception.getStatus());
+    }
+
+    if (exception instanceof ThrottlerException) {
+      exception = new AppHttpException(ErrorCodeEnum.TOO_MANY_REQUESTS);
     }
 
     if (!(exception instanceof AppHttpException)) {

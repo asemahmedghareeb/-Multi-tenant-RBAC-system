@@ -5,7 +5,6 @@ import { GeneratePermissions } from 'src/common/decorators/generate-permissions.
 import { AppBaseEntity } from 'src/common/entities/app-base.entity';
 import { Organization } from '../../organization/entities/organization.entity';
 
-
 @GeneratePermissions()
 @Schema({
   timestamps: true,
@@ -25,7 +24,7 @@ export class Role extends AppBaseEntity {
     type: MongooseSchema.Types.ObjectId,
     ref: 'Organization',
   })
-  organizations: Organization;
+  organization: Organization;
 
   @Prop({ default: false })
   isSuperAdmin: boolean;

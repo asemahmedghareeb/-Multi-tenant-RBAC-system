@@ -1,15 +1,27 @@
-
 import { Module } from '@nestjs/common';
-import { permissionDbModule } from './db/permsssion.db.module';
+import { permissionDbModule } from './db/permission.db.module';
 import { IdentitiesModule } from '../auth-base/identities/identities.module';
 import { RolesController } from './controllers/roles.controller';
 import { rolesDbModule } from './db/roles.db.module';
 import { PermissionsService } from './services/permissions.service';
 import { RolesService } from './services/roles.service';
+import { RepositoryModule } from 'src/common/repositories/repository.module';
+import { organizationDbModule } from '../organization/db/organization.db.module';
+import { PermissionController } from './controllers/permission.controller';
+import { usersDbModule } from '../users/db/user.db.module';
+import { identitiesDbModule } from '../auth-base/identities/db/identities.db.module';
 
 @Module({
-  imports: [rolesDbModule, IdentitiesModule,permissionDbModule],
-  controllers: [RolesController],
+  imports: [
+    IdentitiesModule,
+    RepositoryModule.fromDbModules([
+      permissionDbModule,
+      rolesDbModule,
+      usersDbModule,
+      identitiesDbModule,
+    ]),
+  ],
+  controllers: [RolesController, PermissionController],
   providers: [RolesService, PermissionsService],
   exports: [RolesService, PermissionsService],
 })

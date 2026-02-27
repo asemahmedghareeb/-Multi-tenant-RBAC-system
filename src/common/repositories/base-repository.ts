@@ -1,4 +1,3 @@
-import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import {
   Model,
   Document,
@@ -16,7 +15,7 @@ export interface QueryOptions {
 }
 
 export class BaseRepository<T extends Document> {
-  constructor(protected readonly model: Model<T>) {}
+  constructor(public readonly model: Model<T>) {}
 
   /** Throw NotFoundException when an entity matching options does not exist. */
   async findOneOrFail(
@@ -39,7 +38,7 @@ export class BaseRepository<T extends Document> {
   /** Throw ForbiddenException when an entity matching options exists. */
   async findOneAndFail(
     filter: Record<string, any>,
-    errorMessage?: string,
+    errorMessage?: ErrorCodeEnum,
     options: QueryOptions = {},
   ): Promise<void> {
     const { populate, lean, select } = options;
@@ -49,7 +48,7 @@ export class BaseRepository<T extends Document> {
     if (select) query.select(select);
     const result = await query.exec();
     if (result) {
-      throw new ForbiddenException(errorMessage || 'Entity already exists');
+      throw new AppHttpException(errorMessage || ErrorCodeEnum.BAD_REQUEST_EXCEPTION);
     }
   }
 
@@ -86,7 +85,7 @@ export class BaseRepository<T extends Document> {
         totalCount: total,
       },
     };
-  }
+  } 
 
   /** Update multiple entities matching filter with input. */
   async updateMany(
@@ -146,11 +145,11 @@ export class BaseRepository<T extends Document> {
   /** Delete a single entity or throw NotFoundException if it doesn't exist. */
   async deleteOneOrFail(
     filter: Record<string, any>,
-    errorMessage?: string,
+    errorMessage?: ErrorCodeEnum,
   ): Promise<T> {
     const result = await this.model.findOneAndDelete(filter).exec();
     if (!result) {
-      throw new NotFoundException(errorMessage || 'Entity to delete not found');
+      throw new AppHttpException(errorMessage || ErrorCodeEnum.NOT_FOUND);
     }
     return result;
   }

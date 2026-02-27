@@ -7,10 +7,6 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
-  @IsMongoId()
-  @IsNotEmpty()
-  organization: string;
-
   @IsString()
   @IsNotEmpty()
   username: string;

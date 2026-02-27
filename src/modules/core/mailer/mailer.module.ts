@@ -2,6 +2,9 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { MailService } from './mail.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { BullModule } from '@nestjs/bullmq';
+import { MailQueueProcessor } from './mail-queue.processor';
+import { MAIL_QUEUE } from './enums/mail-job.enum';
 
 @Module({
     imports: [
@@ -23,8 +26,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
                 },
             }),
         }),
+        BullModule.registerQueue({ name: MAIL_QUEUE }),
     ],
-    providers: [MailService],
+    providers: [MailService, MailQueueProcessor],
     exports: [MailService],
 })
 export class NodeMailerModule {}
+

@@ -20,6 +20,9 @@ import { Role } from '../../../roles/entities/role.entity';
 import { UserToken } from '../../user-tokens/entities/user-token.entity';
 import { AUTH_METADATA_KEY } from '../decorators/auth.decorator';
 import { UserType } from '../enums/user-type.enum';
+import { AppHttpException } from 'src/common/exceptions/app-http.exception';
+import { error } from 'console';
+import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -53,7 +56,7 @@ export class AuthGuard implements CanActivate {
     } else {
       const apiKey = this.extractApiKey(request);
       if (!apiKey) {
-        throw new UnauthorizedException('API key is required');
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
       identity = await this.validateApiKey(apiKey);
     }
@@ -88,7 +91,7 @@ export class AuthGuard implements CanActivate {
         authMetadata.permissions,
       );
       if (!hasPermissions) {
-        throw new ForbiddenException('Insufficient permissions');
+        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
       }
     }
 
@@ -100,7 +103,7 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token);
       const tokenExists = await this.userTokenModel.findOne({ token });
       if (!tokenExists) {
-        throw new UnauthorizedException('Invalid token');
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
       const identity = await this.identityModel
         .findById(payload.id)
@@ -116,25 +119,22 @@ export class AuthGuard implements CanActivate {
         .select('-password -__v')
         .exec();
 
-
-
       if (!identity) {
-        throw new UnauthorizedException('Invalid token');
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
 
       if (!identity.isVerified) {
-        throw new UnauthorizedException('Account not verified');
+        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
       }
 
       if (identity.status !== 'ACTIVE') {
-        throw new UnauthorizedException('Account is not active');
+        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
       }
 
       return identity;
     } catch (error) {
       if (error instanceof TokenExpiredError) {
-        console.error('Token has expired:', error.expiredAt);
-        throw new UnauthorizedException('Token has expired');
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
 
       if (error instanceof JsonWebTokenError) {
@@ -142,10 +142,10 @@ export class AuthGuard implements CanActivate {
           console.error(
             'Invalid token signature - token was tampered with or signed with a different secret',
           );
-          throw new UnauthorizedException('Invalid token signature');
+          throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
         }
         console.error('JWT error:', error.message);
-        throw new UnauthorizedException(error.message);
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
 
       if (
@@ -156,7 +156,7 @@ export class AuthGuard implements CanActivate {
       }
 
       console.error('Unknown token validation error:', error);
-      throw new UnauthorizedException('Token validation failed');
+      throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
     }
   }
 
@@ -167,7 +167,7 @@ export class AuthGuard implements CanActivate {
         .populate('organization')
         .exec();
       if (!apiKey) {
-        throw new UnauthorizedException('Invalid API key');
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
 
       switch (apiKey.tier) {
@@ -228,7 +228,7 @@ export class AuthGuard implements CanActivate {
       ) {
         throw error;
       }
-      throw new UnauthorizedException('API key validation failed');
+      throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
     }
   }
 

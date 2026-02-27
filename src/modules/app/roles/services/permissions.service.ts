@@ -1,26 +1,42 @@
+import { ForbiddenException } from '@nestjs/common';
+import { Organization } from './../../organization/entities/organization.entity';
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { getRegisteredPermissionEntities } from 'src/common/decorators/generate-permissions.decorator';
-import { Permission } from '../entities/permission.entity';
+import { Permission, PermissionDocument } from '../entities/permission.entity';
+import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
+import { CreatePermissionDto } from '../dto/create-permission.dto';
+import { CheckUserHasPermissionDto } from '../dto/check-user-has-permission.dto';
+import { OrganizationDocument } from '../../organization/entities/organization.entity';
+import { Transactional } from 'src/common/decorators/transactional.decorator';
+import { BaseRepository } from 'src/common/repositories/base-repository';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import {
+  Identity,
+  IdentityDocument,
+} from '../../auth-base/identities/entities/identity.entity';
+import { IdentityStatus } from '../../auth-base/identities/enums/identity-status.enum';
+import { User, UserDocument } from '../../users/entities/user.entity';
 
 @Injectable()
 export class PermissionsService implements OnModuleInit {
   private readonly logger = new Logger(PermissionsService.name);
 
   constructor(
-    @InjectModel(Permission.name)
-    private readonly permissionModel: Model<Permission>,
+    @InjectRepository(Permission)
+    private readonly permissionRepository: BaseRepository<PermissionDocument>,
+    @InjectRepository(User)
+    private readonly userRepository: BaseRepository<UserDocument>,
+    @InjectRepository(Identity)
+    private readonly identityRepository: BaseRepository<IdentityDocument>,
   ) {}
 
   async onModuleInit() {
-    await this.generatePermissions();
+    // await this.generatePermissions();
     this.logger.log('Permission generation completed');
   }
 
-  /**
-   * Generate permissions for all entities decorated with @GeneratePermissions
-   */
+  @Transactional()
   async generatePermissions(): Promise<void> {
     const permissionsToCreate: Array<{ resource: string; action: string }> = [];
 
@@ -43,7 +59,10 @@ export class PermissionsService implements OnModuleInit {
     }
 
     // Get all existing permissions from database
-    const existingPermissions = await this.permissionModel.find().exec();
+    // const existingPermissions = await this.permissionModel.find().exec();
+    const existingPermissions = await this.permissionRepository.model
+      .find()
+      .exec();
 
     // Create a Set of current valid permission keys for quick lookup
     const validPermissionKeys = new Set(
@@ -58,12 +77,11 @@ export class PermissionsService implements OnModuleInit {
     // Delete obsolete permissions
     if (permissionsToDelete.length > 0) {
       const deleteIds = permissionsToDelete.map((p) => (p as any)._id);
-      await this.permissionModel.deleteMany({ _id: { $in: deleteIds } });
+      await this.permissionRepository.deleteMany({ _id: { $in: deleteIds } });
 
       this.logger.warn(
         `Removed ${permissionsToDelete.length} obsolete permissions:`,
       );
-
     } else {
       this.logger.log('No obsolete permissions found');
     }
@@ -91,11 +109,11 @@ export class PermissionsService implements OnModuleInit {
         };
       });
 
-      const result = await this.permissionModel.bulkWrite(bulkOps);
-      
+      const result = await this.permissionRepository.model.bulkWrite(bulkOps);
+
       this.logger.log(
         `Permissions created: ${result.upsertedCount}, already existed: ${permissionsToCreate.length - result.upsertedCount}`,
-      ); 
+      );
     }
 
     this.logger.log(
@@ -103,24 +121,87 @@ export class PermissionsService implements OnModuleInit {
     );
   }
 
-  /**
-   * Get all permissions
-   */
-  async findAll(): Promise<Permission[]> {
-    return this.permissionModel.find().exec();
+  @Transactional()
+  async createPermission(
+    createPermissionDto: CreatePermissionDto,
+    identity: any,
+  ) {
+    const permission = await this.permissionRepository.createOne({
+      ...(createPermissionDto as any),
+      organization: identity.organization._id,
+    });
+
+    return permission;
   }
 
-  /**
-   * Get permissions by resource
-   */
-  async findByResource(resource: string): Promise<Permission[]> {
-    return this.permissionModel.find({ resource }).exec();
+  async findAll(PaginationDto: PaginationDto, identity: any) {
+    return this.permissionRepository.findPaginated(
+      { organization: identity.organization._id },
+      { createdAt: -1 },
+      PaginationDto.page,
+      PaginationDto.limit,
+    );
   }
 
-  /**
-   * Get a specific permission
-   */
-  async findOne(resource: string, action: string): Promise<Permission | null> {
-    return this.permissionModel.findOne({ resource, action }).exec();
+  async findOne(id: string, identity: any) {
+    return await this.permissionRepository.findOneOrFail(
+      {
+        _id: id,
+        organization: identity.organization._id,
+      },
+      ErrorCodeEnum.FORBIDDEN,
+    );
+  }
+
+  async delete(id: string, identity: any) {
+    const permission = await this.permissionRepository.findOneOrFail(
+      {
+        _id: id,
+        organization: identity.organization._id,
+      },
+      ErrorCodeEnum.FORBIDDEN,
+    );
+
+    //check if the permission is assigned to any role, if yes throw an error
+
+    return this.permissionRepository.deleteOneOrFail({ _id: id });
+  }
+
+  async checkUserHasPermission(dto: CheckUserHasPermissionDto, identity: any) {
+    const userDoc: any = await this.userRepository.findOneOrFail(
+      {
+        _id: dto.userId,
+        organization: identity.organization._id,
+      },
+      ErrorCodeEnum.FORBIDDEN,
+      {
+        populate: [
+          {
+            path: 'identity',
+            populate: [
+              {
+                path: 'role',
+                populate: [
+                  {
+                    path: 'permissions',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    );
+
+    if (userDoc.identity.status === IdentityStatus.BLOCKED) {
+      return false;
+    }
+
+    const hasPermission =
+      userDoc.identity.role?.permissions.some(
+        (p: any) => p._id.toString() === dto.permissionId,
+      ) || false;
+
+    return hasPermission;
   }
 }

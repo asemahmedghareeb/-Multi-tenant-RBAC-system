@@ -11,19 +11,27 @@ import { configModule } from './modules/core/config/config.module';
 import { databaseRootModule } from './modules/core/database/database.module';
 import { jwtModule } from './modules/core/jwt/jwt.module';
 import { AppExceptionFilter } from './common/filters/exception.filter';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { AppHelperModule } from './modules/core/app-helper/app-helper.module';
 import { I18nModule } from 'nestjs-i18n';
 import { I18nConfig } from './modules/core/config/i18n/i18n.config';
+import { ValidationPipeFactory } from './common/pipes/validation-pipe.factory';
+import { AppHelperService } from './modules/core/app-helper/services/app-helper.service';
+import { ResponseSerializerInterceptor } from './common/interceptors/response-serializer.interceptor';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { BullMQModule } from './modules/core/config/bullmq.module';
+import { ThrottlerConfigModule } from './modules/core/config/throttler.module';
 
 @Module({
   imports: [
     databaseRootModule,
     configModule,
     jwtModule,
+    BullMQModule,
+    ThrottlerConfigModule,
     AuthModule,
     IdentitiesModule,
-    OrganizationModule,
+    OrganizationModule,  
     ApiKeysModule,
     RolesModule,
     UsersModule,
@@ -36,6 +44,19 @@ import { I18nConfig } from './modules/core/config/i18n/i18n.config';
     {
       provide: APP_FILTER,
       useClass: AppExceptionFilter,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_PIPE,
+      inject: [AppHelperService],
+      useFactory: ValidationPipeFactory,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseSerializerInterceptor,
     },
   ],
 })

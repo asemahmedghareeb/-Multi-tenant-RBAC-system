@@ -8,7 +8,7 @@ export class HeaderResolver implements I18nResolver {
     // Check if the context is an HTTP request.
     if (context.getType() == 'http') {
       // Extract the 'lang' property from the HTTP request headers.
-      return context.switchToHttp().getRequest().lang;
+      return context.switchToHttp().getRequest().headers.lang;
     }
 
   }

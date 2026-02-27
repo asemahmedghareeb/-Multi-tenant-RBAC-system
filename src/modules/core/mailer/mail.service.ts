@@ -1,20 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { MAIL_QUEUE, MailJob } from './enums/mail-job.enum';
 
 @Injectable()
 export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+  constructor(
+    @InjectQueue(MAIL_QUEUE) private readonly mailQueue: Queue,
+  ) {}
 
-  async sendEmail(to: string, subject: string, html: string) {
-    const mailOptions = {
-      to,
-      subject,
-      html,
-    };
-
-    await this.mailerService.sendMail({
-      ...mailOptions,
-    });
-    return true;
+  async sendEmail(to: string, subject: string, html: string): Promise<void> {
+    await this.mailQueue.add(
+      MailJob.SEND_EMAIL,
+      { to, subject, html },
+      { attempts: 3, backoff: { type: 'exponential', delay: 5000 } },
+    );
   }
 }

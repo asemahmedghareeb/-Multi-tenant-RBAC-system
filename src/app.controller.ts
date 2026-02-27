@@ -1,3 +1,4 @@
+import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
 import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
 import { DefaultPermissionActionsEnum } from './common/enums/default-permissions.enum';
 import { Auth } from './modules/app/auth-base/auth/decorators/auth.decorator';
@@ -7,15 +8,16 @@ import { Organization } from './modules/app/organization/entities/organization.e
 import { User } from './modules/app/users/entities/user.entity';
 import { Identity } from './modules/app/auth-base/identities/entities/identity.entity';
 import { AppHttpException } from './common/exceptions/app-http.exception';
-import { ErrorCodeEnum } from './common/enums/error-code.enum';
+
+import { ApiUtil } from './common/utils/response-util';
+import { ResponseMessageEnum } from './common/enums/response-message.enum';
 
 @Controller()
 export class AppController {
-  @Auth({ validateToken: true, roles: [UserType.ORGANIZATION] })
+  // @Auth({ validateToken: true, roles: [UserType.ORGANIZATION] })
   @Get('admin-only')
   adminOnlyEndpoint(@CurrentUser() user: Identity) {
-    throw new AppHttpException(ErrorCodeEnum.BAD_REQUEST_EXCEPTION);
-    return { message: 'Only admins can access this', user };
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, user);
   }
 
   @Auth({

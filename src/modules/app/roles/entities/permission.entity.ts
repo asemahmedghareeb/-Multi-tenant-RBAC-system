@@ -15,7 +15,7 @@ export class Permission extends AppBaseEntity {
     type: MongooseSchema.Types.ObjectId,
     ref: 'Organization',
   })
-  organizations: Organization;
+  organization: Organization;
 
   @Prop({ type: String, required: true })
   resource: string;
