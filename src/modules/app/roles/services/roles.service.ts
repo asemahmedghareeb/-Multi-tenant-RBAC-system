@@ -4,7 +4,7 @@ import { Role, RoleDocument } from '../entities/role.entity';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { AddRoleDto } from '../dto/add-role.dto';
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { AddOrRemovePermissionsDto } from '../dto/add-or-remove-permissions.dto';
 import { AssignRoleToUserDto } from '../dto/assign-role-to-user.dto';
@@ -67,7 +67,7 @@ export class RolesService {
         _id: id,
         organization: identity.organization._id,
       },
-      ErrorCodeEnum.FORBIDDEN,
+      ErrorMessageEnum.FORBIDDEN,
     );
   }
 
@@ -101,7 +101,7 @@ export class RolesService {
       .exec();
 
     if (foundPermissions.length !== addPermissionDto.permissions.length) {
-      throw new AppHttpException(ErrorCodeEnum.NOT_FOUND);
+      throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
     role.permissions.push(...(addPermissionDto.permissions as any));
@@ -120,7 +120,7 @@ export class RolesService {
         _id: dto.userId,
         organization: identity.organization._id,
       },
-      ErrorCodeEnum.NOT_FOUND,
+      ErrorMessageEnum.NOT_FOUND,
     );
 
     await this.identityRepository.model.findOneAndUpdate(
@@ -137,7 +137,7 @@ export class RolesService {
         _id: dto.userId,
         organization: identity.organization._id,
       },
-      ErrorCodeEnum.NOT_FOUND,
+      ErrorMessageEnum.NOT_FOUND,
     );
 
     await this.identityRepository.model.findOneAndUpdate(
@@ -171,7 +171,7 @@ export class RolesService {
       .exec();
 
     if (foundPermissions.length !== addPermissionDto.permissions.length) {
-      throw new AppHttpException(ErrorCodeEnum.NOT_FOUND);
+      throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
     role.permissions = role.permissions.filter((p: Permission) => {

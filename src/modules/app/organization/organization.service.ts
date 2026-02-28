@@ -8,7 +8,7 @@ import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { UpgradeSubscriptionDto } from './dto/upgrade-subscription.dto';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 
 @Injectable()
 export class OrganizationService {
@@ -29,7 +29,7 @@ export class OrganizationService {
       );
 
     if (!updatedOrganization) {
-      throw new AppHttpException(ErrorCodeEnum.NOT_FOUND);
+      throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
     return true;

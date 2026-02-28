@@ -28,7 +28,7 @@ import {
 import { AUTH_METADATA_KEY } from '../decorators/auth.decorator';
 import { UserType } from '../enums/user-type.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 
@@ -66,7 +66,7 @@ export class AuthGuard implements CanActivate {
     } else {
       const apiKey = this.extractApiKey(request);
       if (!apiKey) {
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
       identity = await this.validateApiKey(apiKey);
     }
@@ -100,7 +100,7 @@ export class AuthGuard implements CanActivate {
         authMetadata.permissions,
       );
       if (!hasPermissions) {
-        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
       }
     }
 
@@ -112,7 +112,7 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token);
       const tokenExists = await this.userTokenRepository.model.find({ token });
       if (!tokenExists) {
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
       const identity = await this.identityRepository.model
         .findById(payload.id)
@@ -129,21 +129,21 @@ export class AuthGuard implements CanActivate {
         .exec();
 
       if (!identity) {
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
 
       if (!identity.isVerified) {
-        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
       }
 
       if (identity.status !== 'ACTIVE') {
-        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
       }
 
       return identity;
     } catch (error) {
       console.error('Unknown token validation error:', error);
-      throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
     }
   }
 
@@ -154,35 +154,41 @@ export class AuthGuard implements CanActivate {
         .populate('organization')
         .exec();
       if (!apiKey) {
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
 
+      console.log('API Key found:', apiKey.tier);
       switch (apiKey.tier) {
         case SubscriptionTiers.FREE:
           if (
             apiKey.usageCount >=
             TIER_LIMITS[SubscriptionTiers.FREE].requestsPerMonth
           ) {
-            throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+            throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
           }
 
+          break;
         case SubscriptionTiers.PRO:
           if (
             apiKey.usageCount >=
             TIER_LIMITS[SubscriptionTiers.PRO].requestsPerMonth
           ) {
-            throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+            console.log(1);
+            throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
           }
+          break;
+
         case SubscriptionTiers.ENTERPRISE:
           if (
             apiKey.usageCount >=
             TIER_LIMITS[SubscriptionTiers.ENTERPRISE].requestsPerMonth
           ) {
-            throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+            throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
           }
           break;
         default:
-          throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+          console.warn(`Unknown subscription tier: ${apiKey.tier}`);
+          throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
 
       apiKey.usageCount += 1;
@@ -200,16 +206,16 @@ export class AuthGuard implements CanActivate {
         .exec();
 
       if (!identity) {
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
 
       if (identity.status !== 'ACTIVE') {
-        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
       }
 
       return identity;
     } catch (error) {
-      throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
+      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
     }
   }
 

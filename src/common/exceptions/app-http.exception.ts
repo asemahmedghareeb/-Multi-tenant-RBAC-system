@@ -1,22 +1,30 @@
 import { HttpException } from '@nestjs/common';
-import { ErrorCodeEnum } from '../enums/error-code.enum';
+import { ErrorMessageEnum } from '../enums/error-message.enum';
+import { ERROR_CODE_CONFIG } from '../enums/error-code-config';
 import { ValidationError } from 'class-validator';
 
 // Custom exception class extending the built-in HttpException.
-// This class is used to provide additional metadata (extensions) for errors.
 export class AppHttpException extends HttpException {
-  constructor(
-    // The error code representing the type of error (e.g., BAD_REQUEST_EXCEPTION).
-    errorCode: ErrorCodeEnum,
+  public readonly errorCodeEnum: ErrorMessageEnum;
+  private readonly httpStatusCode: number;
 
-    // Additional metadata to include in the error response.
-    // This can include validation errors, timestamps, or other custom data.
+  constructor(
+    // The error code enum (message key)
+    errorCodeEnum: ErrorMessageEnum,
+
+    // Additional metadata to include in the error response
     public extensions: {
       [key: string]: string | number | Partial<ValidationError>[];
     } = {},
   ) {
-    // Calls the parent HttpException constructor with the error message and status code.
-    // The error message is derived from the ErrorCodeEnum.
-    super(ErrorCodeEnum[errorCode], errorCode);
+    // Get HTTP status code from config, default to 400
+    const httpStatus = ERROR_CODE_CONFIG[errorCodeEnum] ?? 400;
+    
+    // Call parent with error code enum name and HTTP status
+    super(errorCodeEnum, httpStatus);
+    
+    // Store the error code enum
+    this.errorCodeEnum = errorCodeEnum;
+    this.httpStatusCode = httpStatus;
   }
 }

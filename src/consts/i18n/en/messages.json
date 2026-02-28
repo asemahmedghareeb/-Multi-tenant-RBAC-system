@@ -1,3 +1,4 @@
 {
-  "SUCCESS": "Operation done successfully"
+  "SUCCESS": "Operation done successfully",
+  "OTP_SIGNUP_MESSAGE": "Your OTP for organization signup is: {otp}. It will expire in 10 minutes."
 }

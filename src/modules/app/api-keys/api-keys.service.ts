@@ -10,7 +10,7 @@ import {
   Organization,
   OrganizationDocument,
 } from '../organization/entities/organization.entity';
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 
@@ -87,7 +87,7 @@ export class ApiKeysService {
     if (
       apiKey.organization.toString() !== identity.organization._id.toString()
     ) {
-      throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
+      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
     }
 
     await this.apiKeyRepository.deleteOne({ _id: id });

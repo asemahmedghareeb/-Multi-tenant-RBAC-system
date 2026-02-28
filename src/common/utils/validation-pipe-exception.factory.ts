@@ -1,5 +1,5 @@
 import { ValidationError } from 'class-validator';
-import { ErrorCodeEnum } from '../enums/error-code.enum';
+import { ErrorMessageEnum } from '../enums/error-message.enum';
 import { AppHttpException } from '../exceptions/app-http.exception';
 import { AppHelperService } from 'src/modules/core/app-helper/services/app-helper.service';
 import { ValidationErrorMessageEnum } from '../enums/validation-error-message.enum';
@@ -11,10 +11,13 @@ export const validationPipeExceptionFactory = (
   lang?: LangEnum,
 ) => {
   // Throws a custom exception (AppHttpException) with a BAD_REQUEST_EXCEPTION error code.
-  return new AppHttpException(ErrorCodeEnum.BAD_REQUEST_EXCEPTION, {
-    // Maps validation errors to a localized format.
-    validationMessages: getValidationMessages(errors, appHelperService, lang),
-  });
+  return new AppHttpException(
+    ErrorMessageEnum.BAD_REQUEST_EXCEPTION,
+    {
+      // Maps validation errors to a localized format.
+      validationMessages: getValidationMessages(errors, appHelperService, lang),
+    },
+  );
 };
 
 const getValidationMessages = (

@@ -10,7 +10,7 @@ import { Identity } from '../../auth-base/identities/entities/identity.entity';
   timestamps: true,
 })
 export class User extends AppBaseEntity {
-  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'organization' })
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Organization' })
   organization: string | Organization;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Identity' })

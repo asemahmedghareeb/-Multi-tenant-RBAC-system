@@ -1,4 +1,5 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { I18nService } from 'nestjs-i18n';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { OtpUtil } from 'src/common/utils/otp-util';
@@ -19,6 +20,8 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { VerifyReason } from './enums/otp-verify-reason.enum';
 import { AuthHelper } from './helpers/auth.helper';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
+import { AppHttpException } from 'src/common/exceptions/app-http.exception';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 
 @Injectable()
 export class AuthService {
@@ -32,6 +35,7 @@ export class AuthService {
     private readonly authHelper: AuthHelper,
     private readonly mailerService: MailService,
     private readonly apiKeyGeneratorHelper: ApiKeyGeneratorHelper,
+    private readonly i18nService: I18nService,
   ) {}
 
   @Transactional()
@@ -59,8 +63,8 @@ export class AuthService {
 
     await this.mailerService.sendEmail(
       email,
-      'OTP for Organization Signup',
-      `<p>Your OTP for organization signup is: <b>${otp}</b>. It will expire in 10 minutes.</p>`,
+      this.i18nService.t('mail-subject.ORGANIZATION_SIGNUP_OTP'),
+      `<p><b>${this.i18nService.t('messages.OTP_SIGNUP_MESSAGE', { args: { otp } })}</b></p>`,
     );
 
     const token = await this.authHelper.newToken({
@@ -73,8 +77,6 @@ export class AuthService {
       key: this.apiKeyGeneratorHelper.generateApiKey(),
       tier: SubscriptionTiers.FREE,
     });
-
-    await apiKey.save();
 
     return {
       token,
@@ -89,12 +91,12 @@ export class AuthService {
     const identity = await this.identityRepository.findOneOrFail({ email });
 
     if (!identity.isVerified) {
-      throw new BadRequestException('Email not verified');
+      throw new AppHttpException(ErrorMessageEnum.USER_NOT_VERIFIED);
     }
     const isPasswordValid = await identity.comparePassword(password);
 
     if (!isPasswordValid) {
-      throw new BadRequestException('Invalid credentials');
+      throw new AppHttpException(ErrorMessageEnum.WRONG_EMAIL_OR_PASSWORD);
     }
 
     const token = await this.authHelper.newToken({
@@ -111,12 +113,12 @@ export class AuthService {
     });
 
     if (user.otp !== data.otp) {
-      throw new BadRequestException('Invalid OTP');
+      throw new AppHttpException(ErrorMessageEnum.INVALID_VERIFICATION_CODE);
     }
     const validOtp = OtpUtil.verifyOtp(data.otp, user.otp, user.otpExpireAt!);
 
     if (!validOtp) {
-      throw new BadRequestException('expired OTP');
+      throw new AppHttpException(ErrorMessageEnum.EXPIRED_VERIFICATION_CODE);
     }
 
     if (data.reason === VerifyReason.VERIFY) {
@@ -139,14 +141,12 @@ export class AuthService {
     });
 
     if (!user.canResetPassword)
-      throw new BadRequestException('Password reset not allowed');
+      throw new AppHttpException(ErrorMessageEnum.PASSWORD_RESET_NOT_ALLOWED);
 
     const isSamePassword = await user.comparePassword(data.newPassword);
 
     if (isSamePassword)
-      throw new BadRequestException(
-        'New password cannot be the same as old password',
-      );
+      throw new AppHttpException(ErrorMessageEnum.SAME_PASSWORD_ERROR);
 
     user.password = data.newPassword;
     user.canResetPassword = false;
@@ -170,8 +170,8 @@ export class AuthService {
     await user.save();
     await this.mailerService.sendEmail(
       data.email,
-      'OTP Request',
-      `<p>Your OTP is: <b>${otp}</b>. It will expire in 10 minutes.</p>`,
+      this.i18nService.t('mail-subject.OTP_REQUEST'),
+      `<p>${this.i18nService.t('messages.OTP_REQUEST_MESSAGE', { args: { otp } })}</p>`,
     );
   }
 }

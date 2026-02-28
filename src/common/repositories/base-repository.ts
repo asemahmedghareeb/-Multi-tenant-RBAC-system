@@ -6,7 +6,7 @@ import {
   SortOrder,
 } from 'mongoose';
 import { AppHttpException } from '../exceptions/app-http.exception';
-import { ErrorCodeEnum } from '../enums/error-code.enum';
+import { ErrorMessageEnum } from '../enums/error-message.enum';
 
 export interface QueryOptions {
   populate?: PopulateOptions | (string | PopulateOptions)[];
@@ -20,7 +20,7 @@ export class BaseRepository<T extends Document> {
   /** Throw NotFoundException when an entity matching options does not exist. */
   async findOneOrFail(
     filter: Record<string, any>,
-    errorMessage?: ErrorCodeEnum,
+    errorMessage?: ErrorMessageEnum,
     options: QueryOptions = {},
   ): Promise<T> {
     let query = this.model.findOne(filter);
@@ -30,7 +30,7 @@ export class BaseRepository<T extends Document> {
     if (select) query.select(select);
     const result = await query.exec();
     if (!result) {
-      throw new AppHttpException(errorMessage || ErrorCodeEnum.NOT_FOUND);
+      throw new AppHttpException(errorMessage || ErrorMessageEnum.NOT_FOUND);
     }
     return result;
   }
@@ -38,7 +38,7 @@ export class BaseRepository<T extends Document> {
   /** Throw ForbiddenException when an entity matching options exists. */
   async findOneAndFail(
     filter: Record<string, any>,
-    errorMessage?: ErrorCodeEnum,
+    errorMessage?: ErrorMessageEnum,
     options: QueryOptions = {},
   ): Promise<void> {
     const { populate, lean, select } = options;
@@ -49,7 +49,7 @@ export class BaseRepository<T extends Document> {
     const result = await query.exec();
     if (result) {
       throw new AppHttpException(
-        errorMessage || ErrorCodeEnum.BAD_REQUEST_EXCEPTION,
+        errorMessage || ErrorMessageEnum.BAD_REQUEST_EXCEPTION,
       );
     }
   }
@@ -147,11 +147,11 @@ export class BaseRepository<T extends Document> {
   /** Delete a single entity or throw NotFoundException if it doesn't exist. */
   async deleteOneOrFail(
     filter: Record<string, any>,
-    errorMessage?: ErrorCodeEnum,
+    errorMessage?: ErrorMessageEnum,
   ): Promise<T> {
     const result = await this.model.findOneAndDelete(filter).exec();
     if (!result) {
-      throw new AppHttpException(errorMessage || ErrorCodeEnum.NOT_FOUND);
+      throw new AppHttpException(errorMessage || ErrorMessageEnum.NOT_FOUND);
     }
     return result;
   }

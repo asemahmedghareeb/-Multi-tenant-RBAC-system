@@ -7,7 +7,7 @@ import { CheckUserHasPermissionDto } from '../dto/check-user-has-permission.dto'
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { IdentityStatus } from '../../auth-base/identities/enums/identity-status.enum';
 import { User, UserDocument } from '../../users/entities/user.entity';
 
@@ -143,7 +143,7 @@ export class PermissionsService implements OnModuleInit {
         _id: id,
         organization: identity.organization._id,
       },
-      ErrorCodeEnum.FORBIDDEN,
+      ErrorMessageEnum.FORBIDDEN,
     );
   }
 
@@ -153,7 +153,7 @@ export class PermissionsService implements OnModuleInit {
         _id: id,
         organization: identity.organization._id,
       },
-      ErrorCodeEnum.FORBIDDEN,
+      ErrorMessageEnum.FORBIDDEN,
     );
 
     return this.permissionRepository.deleteOneOrFail({ _id: id });
@@ -165,7 +165,7 @@ export class PermissionsService implements OnModuleInit {
         _id: dto.userId,
         organization: identity.organization._id,
       },
-      ErrorCodeEnum.FORBIDDEN,
+      ErrorMessageEnum.FORBIDDEN,
       {
         populate: [
           {

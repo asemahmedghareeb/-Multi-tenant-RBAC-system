@@ -11,7 +11,7 @@ import {
   IdentityDocument,
 } from '../auth-base/identities/entities/identity.entity';
 import { IdentityStatus } from '../auth-base/identities/enums/identity-status.enum';
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 
 @Injectable()
 export class UsersService {
@@ -63,7 +63,7 @@ export class UsersService {
   async findOne(id: string) {
     return await this.userRepository.findOneOrFail(
       { _id: id },
-      ErrorCodeEnum.NOT_FOUND,
+      ErrorMessageEnum.NOT_FOUND,
       {
         populate: {
           path: 'identity',
@@ -87,7 +87,7 @@ export class UsersService {
   async blockORUnblockUser(id: string) {
     const user = await this.userRepository.findOneOrFail(
       { _id: id },
-      ErrorCodeEnum.NOT_FOUND,
+      ErrorMessageEnum.NOT_FOUND,
       {
         populate: {
           path: 'identity',
