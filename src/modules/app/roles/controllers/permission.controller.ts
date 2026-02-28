@@ -34,12 +34,6 @@ export class PermissionController {
 
   @Auth({
     roles: [UserType.ORGANIZATION],
-    // permissions: [
-    //   {
-    //     target: Permission.permissionsTarget,
-    //     action: DefaultPermissionActionsEnum.CREATE,
-    //   },
-    // ],
   })
   @Post()
   async createPermission(
