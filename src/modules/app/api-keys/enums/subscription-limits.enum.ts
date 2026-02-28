@@ -1,4 +1,4 @@
-import { SubscriptionTiers } from './subscribtion-tiers.enum';
+import { SubscriptionTiers } from './subscription-tiers.enum';
 
 type TierLimit = {
   requestsPerMonth: number;

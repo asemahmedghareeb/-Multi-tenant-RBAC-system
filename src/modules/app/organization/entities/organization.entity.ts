@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
 import { AppBaseEntity } from 'src/common/entities/app-base.entity';
-import { SubscriptionTiers } from '../../api-keys/enums/subscribtion-tiers.enum';
+import { SubscriptionTiers } from '../../api-keys/enums/subscription-tiers.enum';
 import { Identity } from '../../auth-base/identities/entities/identity.entity';
 
 @GeneratePermissions()

@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
-import { identitiesDbModule } from './db/identities.db.module';
 
 @Module({
-  imports: [identitiesDbModule],
+  imports: [],
   controllers: [],
   providers: [],
   exports: [],

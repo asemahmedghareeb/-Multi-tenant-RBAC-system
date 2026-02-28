@@ -1,32 +1,35 @@
-import { Injectable, ForbiddenException } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
-import { Transactional } from "src/common/decorators/transactional.decorator";
-import { BaseRepository } from "src/common/repositories/base-repository";
-import { ApiKeyDocument, ApiKey } from "./entities/api-key.entity";
-import { TIER_LIMITS } from "./enums/subscribtion-limits.enum";
-import { SubscriptionTiers } from "./enums/subscribtion-tiers.enum";
-import { ApiKeyGeneratorHelper } from "./helpers/api-key-generator.helper";
-import { PaginationDto } from "src/common/dtos/pagination.dto";
-import { Organization } from "../organization/entities/organization.entity";
-import { ErrorCodeEnum } from "src/common/enums/error-code.enum";
+import { Injectable, ForbiddenException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Transactional } from 'src/common/decorators/transactional.decorator';
+import { BaseRepository } from 'src/common/repositories/base-repository';
+import { ApiKeyDocument, ApiKey } from './entities/api-key.entity';
+import { TIER_LIMITS } from './enums/subscription-limits.enum';
+import { SubscriptionTiers } from './enums/subscription-tiers.enum';
+import { ApiKeyGeneratorHelper } from './helpers/api-key-generator.helper';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import {
+  Organization,
+  OrganizationDocument,
+} from '../organization/entities/organization.entity';
+import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { AppHttpException } from 'src/common/exceptions/app-http.exception';
+import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 
 @Injectable()
-export class ApiKeysService extends BaseRepository<ApiKeyDocument> {
+export class ApiKeysService {
   constructor(
-    @InjectModel(ApiKey.name)
-    private readonly apiKeyModel: Model<ApiKeyDocument>,
-    @InjectModel(Organization.name)
-    private readonly organizationModel: Model<Organization>,
     private readonly apiKeyGeneratorHelper: ApiKeyGeneratorHelper,
-  ) {
-    super(apiKeyModel);
-  }
+    @InjectRepository(Organization)
+    private readonly organizationRepository: BaseRepository<OrganizationDocument>,
+    @InjectRepository(ApiKey)
+    private readonly apiKeyRepository: BaseRepository<ApiKeyDocument>,
+  ) {}
 
   @Transactional()
   async create(identity: any) {
     const organization = identity.organization;
-    const orga: any = await this.organizationModel
+    const orga: any = await this.organizationRepository.model
       .findById(organization)
       .populate('apiKeys')
       .exec();
@@ -57,7 +60,7 @@ export class ApiKeysService extends BaseRepository<ApiKeyDocument> {
         }
         break;
     }
-    const apiKey = await this.createOne({
+    const apiKey = await this.apiKeyRepository.createOne({
       organization: organization._id,
       key: this.apiKeyGeneratorHelper.generateApiKey(),
       tier: organization.subscriptionTier,
@@ -67,7 +70,7 @@ export class ApiKeysService extends BaseRepository<ApiKeyDocument> {
   }
 
   async findAll(PaginationDto: PaginationDto, identity: any) {
-    return this.findPaginated(
+    return this.apiKeyRepository.findPaginated(
       { organization: identity.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
@@ -76,22 +79,20 @@ export class ApiKeysService extends BaseRepository<ApiKeyDocument> {
   }
 
   findOne(id: string) {
-    return this.findOneOrFail({ _id: id });
+    return this.apiKeyRepository.findOneOrFail({ _id: id });
   }
 
   @Transactional()
   async remove(id: string, identity: any) {
-    const apiKey = await this.findOneOrFail({ _id: id });
+    const apiKey = await this.apiKeyRepository.findOneOrFail({ _id: id });
 
     if (
       apiKey.organization.toString() !== identity.organization._id.toString()
     ) {
-      throw new ForbiddenException(
-        'You do not have permission to delete this API key',
-      );
+      throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
     }
 
-    await this.model.deleteOne({ _id: id }).exec();
+    await this.apiKeyRepository.deleteOne({ _id: id });
     return true;
   }
 }

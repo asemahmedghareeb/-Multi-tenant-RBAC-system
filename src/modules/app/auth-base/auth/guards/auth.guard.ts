@@ -10,29 +10,41 @@ import { JwtService, TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuthMetadata } from 'src/common/types/auth-metadata.type';
-import { ApiKey } from '../../../api-keys/entities/api-key.entity';
-import { TIER_LIMITS } from '../../../api-keys/enums/subscribtion-limits.enum';
-import { SubscriptionTiers } from '../../../api-keys/enums/subscribtion-tiers.enum';
-import { Identity } from '../../identities/entities/identity.entity';
+import {
+  ApiKey,
+  ApiKeyDocument,
+} from '../../../api-keys/entities/api-key.entity';
+import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
+import { SubscriptionTiers } from '../../../api-keys/enums/subscription-tiers.enum';
+import {
+  Identity,
+  IdentityDocument,
+} from '../../identities/entities/identity.entity';
 import { Organization } from '../../../organization/entities/organization.entity';
 import { Permission } from '../../../roles/entities/permission.entity';
 import { Role } from '../../../roles/entities/role.entity';
-import { UserToken } from '../../user-tokens/entities/user-token.entity';
+import {
+  UserToken,
+  UserTokenDocument,
+} from '../../user-tokens/entities/user-token.entity';
 import { AUTH_METADATA_KEY } from '../decorators/auth.decorator';
 import { UserType } from '../enums/user-type.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
-import { error } from 'console';
 import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
+import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
+import { BaseRepository } from 'src/common/repositories/base-repository';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly jwtService: JwtService,
-    @InjectModel(Identity.name) private readonly identityModel: Model<Identity>,
-    @InjectModel(ApiKey.name) private readonly apiKeyModel: Model<ApiKey>,
-    @InjectModel(UserToken.name)
-    private readonly userTokenModel: Model<UserToken>,
+    @InjectRepository(Identity)
+    private readonly identityRepository: BaseRepository<IdentityDocument>,
+    @InjectRepository(ApiKey)
+    private readonly apiKeyRepository: BaseRepository<ApiKeyDocument>,
+    @InjectRepository(UserToken)
+    private readonly userTokenRepository: BaseRepository<UserTokenDocument>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -67,7 +79,6 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    // Super admin bypass
     if (identity.isSuperAdmin) {
       return true;
     }
@@ -101,11 +112,11 @@ export class AuthGuard implements CanActivate {
   private async validateToken(token: string): Promise<any> {
     try {
       const payload = await this.jwtService.verifyAsync(token);
-      const tokenExists = await this.userTokenModel.findOne({ token });
+      const tokenExists = await this.userTokenRepository.model.find({ token });
       if (!tokenExists) {
         throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
-      const identity = await this.identityModel
+      const identity = await this.identityRepository.model
         .findById(payload.id)
         .populate([
           { path: 'organization' },
@@ -133,28 +144,6 @@ export class AuthGuard implements CanActivate {
 
       return identity;
     } catch (error) {
-      if (error instanceof TokenExpiredError) {
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
-      }
-
-      if (error instanceof JsonWebTokenError) {
-        if (error.message === 'invalid signature') {
-          console.error(
-            'Invalid token signature - token was tampered with or signed with a different secret',
-          );
-          throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
-        }
-        console.error('JWT error:', error.message);
-        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
-      }
-
-      if (
-        error instanceof UnauthorizedException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
-
       console.error('Unknown token validation error:', error);
       throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
     }
@@ -162,7 +151,7 @@ export class AuthGuard implements CanActivate {
 
   private async validateApiKey(Key: string): Promise<any> {
     try {
-      const apiKey = await this.apiKeyModel
+      const apiKey = await this.apiKeyRepository.model
         .findOne({ key: Key })
         .populate('organization')
         .exec();
@@ -176,7 +165,7 @@ export class AuthGuard implements CanActivate {
             apiKey.usageCount >=
             TIER_LIMITS[SubscriptionTiers.FREE].requestsPerMonth
           ) {
-            throw new ForbiddenException('API key request limit exceeded');
+            throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
           }
 
         case SubscriptionTiers.PRO:
@@ -184,24 +173,24 @@ export class AuthGuard implements CanActivate {
             apiKey.usageCount >=
             TIER_LIMITS[SubscriptionTiers.PRO].requestsPerMonth
           ) {
-            throw new ForbiddenException('API key request limit exceeded');
+            throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
           }
         case SubscriptionTiers.ENTERPRISE:
           if (
             apiKey.usageCount >=
             TIER_LIMITS[SubscriptionTiers.ENTERPRISE].requestsPerMonth
           ) {
-            throw new ForbiddenException('API key request limit exceeded');
+            throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
           }
           break;
         default:
-          throw new UnauthorizedException('Invalid subscription tier');
+          throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
 
       apiKey.usageCount += 1;
       await apiKey.save();
 
-      const identity = await this.identityModel
+      const identity = await this.identityRepository.model
         .findById((apiKey.organization as Organization).identity.toString())
         .populate([
           { path: 'organization' },
@@ -213,21 +202,15 @@ export class AuthGuard implements CanActivate {
         .exec();
 
       if (!identity) {
-        throw new UnauthorizedException('User not found');
+        throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
       }
 
       if (identity.status !== 'ACTIVE') {
-        throw new UnauthorizedException('User account is not active');
+        throw new AppHttpException(ErrorCodeEnum.FORBIDDEN);
       }
 
       return identity;
     } catch (error) {
-      if (
-        error instanceof UnauthorizedException ||
-        error instanceof ForbiddenException
-      ) {
-        throw error;
-      }
       throw new AppHttpException(ErrorCodeEnum.UNAUTHORIZED);
     }
   }

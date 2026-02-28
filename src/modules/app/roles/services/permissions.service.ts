@@ -1,20 +1,13 @@
-import { ForbiddenException } from '@nestjs/common';
-import { Organization } from './../../organization/entities/organization.entity';
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { getRegisteredPermissionEntities } from 'src/common/decorators/generate-permissions.decorator';
 import { Permission, PermissionDocument } from '../entities/permission.entity';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { CheckUserHasPermissionDto } from '../dto/check-user-has-permission.dto';
-import { OrganizationDocument } from '../../organization/entities/organization.entity';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
-import {
-  Identity,
-  IdentityDocument,
-} from '../../auth-base/identities/entities/identity.entity';
 import { IdentityStatus } from '../../auth-base/identities/enums/identity-status.enum';
 import { User, UserDocument } from '../../users/entities/user.entity';
 
@@ -27,12 +20,10 @@ export class PermissionsService implements OnModuleInit {
     private readonly permissionRepository: BaseRepository<PermissionDocument>,
     @InjectRepository(User)
     private readonly userRepository: BaseRepository<UserDocument>,
-    @InjectRepository(Identity)
-    private readonly identityRepository: BaseRepository<IdentityDocument>,
   ) {}
 
   async onModuleInit() {
-    // await this.generatePermissions();
+    await this.generatePermissions();
     this.logger.log('Permission generation completed');
   }
 
@@ -70,8 +61,11 @@ export class PermissionsService implements OnModuleInit {
     );
 
     // Find permissions to delete (exist in DB but not in current entities)
+    // Skip permissions that belong to an organization (have an organization id)
     const permissionsToDelete = existingPermissions.filter(
-      (p) => !validPermissionKeys.has(`${p.resource}:${p.action}`),
+      (p) =>
+        !validPermissionKeys.has(`${p.resource}:${p.action}`) &&
+        !(p as any).organization,
     );
 
     // Delete obsolete permissions

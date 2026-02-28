@@ -1,12 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { OtpUtil } from 'src/common/utils/otp-util';
 import { MailService } from 'src/modules/core/mailer/mail.service';
 import { ApiKey } from '../../api-keys/entities/api-key.entity';
-import { SubscriptionTiers } from '../../api-keys/enums/subscribtion-tiers.enum';
+import { SubscriptionTiers } from '../../api-keys/enums/subscription-tiers.enum';
 import { ApiKeyGeneratorHelper } from '../../api-keys/helpers/api-key-generator.helper';
 import {
   IdentityDocument,
@@ -20,33 +18,32 @@ import { ResetPasswordDto } from './dto/reset-password';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { VerifyReason } from './enums/otp-verify-reason.enum';
 import { AuthHelper } from './helpers/auth.helper';
+import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 
 @Injectable()
-export class AuthService extends BaseRepository<IdentityDocument> {
+export class AuthService {
   constructor(
-    @InjectModel(Identity.name)
-    private readonly identityModel: Model<IdentityDocument>,
-    @InjectModel(Organization.name)
-    private readonly organizationModel: Model<Organization>,
-    @InjectModel(ApiKey.name)
-    private readonly apiKeyModel: Model<ApiKey>,
+    @InjectRepository(Identity)
+    private readonly identityRepository: BaseRepository<IdentityDocument>,
+    @InjectRepository(Organization)
+    private readonly organizationRepository: BaseRepository<Organization>,
+    @InjectRepository(ApiKey)
+    private readonly apiKeyRepository: BaseRepository<ApiKey>,
     private readonly authHelper: AuthHelper,
     private readonly mailerService: MailService,
     private readonly apiKeyGeneratorHelper: ApiKeyGeneratorHelper,
-  ) {
-    super(identityModel);
-  }
+  ) {}
 
   @Transactional()
   async signUp(data: OrganizationSignupDto) {
     const { email, password, name } = data;
 
-    await this.findOneAndFail({ email });
+    await this.identityRepository.findOneAndFail({ email });
 
     const otp = OtpUtil.generateOtp();
     const otpExpireAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    const identity = await this.createOne({
+    const identity = await this.identityRepository.createOne({
       email,
       password,
       otp,
@@ -55,12 +52,10 @@ export class AuthService extends BaseRepository<IdentityDocument> {
 
     const identitySaved = await identity.save();
 
-    const organization = new this.organizationModel({
-      identity: identitySaved._id,
+    const organization = await this.organizationRepository.createOne({
+      identity: identitySaved._id.toString(),
       name,
     });
-
-    await organization.save();
 
     await this.mailerService.sendEmail(
       email,
@@ -73,8 +68,8 @@ export class AuthService extends BaseRepository<IdentityDocument> {
       userType: identitySaved.type,
     });
 
-    const apiKey = new this.apiKeyModel({
-      organization: organization._id,
+    const apiKey = await this.apiKeyRepository.createOne({
+      organization: organization._id.toString(),
       key: this.apiKeyGeneratorHelper.generateApiKey(),
       tier: SubscriptionTiers.FREE,
     });
@@ -91,7 +86,7 @@ export class AuthService extends BaseRepository<IdentityDocument> {
   async signIn(data: OrganizationSignInDto) {
     const { email, password } = data;
 
-    const identity = await this.findOneOrFail({ email });
+    const identity = await this.identityRepository.findOneOrFail({ email });
 
     if (!identity.isVerified) {
       throw new BadRequestException('Email not verified');
@@ -111,7 +106,9 @@ export class AuthService extends BaseRepository<IdentityDocument> {
 
   @Transactional()
   async verifyOtp(data: VerifyOtpDto) {
-    const user = await this.findOneOrFail({ email: data.email });
+    const user = await this.identityRepository.findOneOrFail({
+      email: data.email,
+    });
 
     if (user.otp !== data.otp) {
       throw new BadRequestException('Invalid OTP');
@@ -137,7 +134,9 @@ export class AuthService extends BaseRepository<IdentityDocument> {
 
   @Transactional()
   async resetPassword(data: ResetPasswordDto) {
-    const user = await this.findOneOrFail({ email: data.email });
+    const user = await this.identityRepository.findOneOrFail({
+      email: data.email,
+    });
 
     if (!user.canResetPassword)
       throw new BadRequestException('Password reset not allowed');
@@ -159,7 +158,9 @@ export class AuthService extends BaseRepository<IdentityDocument> {
 
   @Transactional()
   async requestOtp(data: RequestOtpDto) {
-    const user = await this.findOneOrFail({ email: data.email });
+    const user = await this.identityRepository.findOneOrFail({
+      email: data.email,
+    });
 
     const otp = OtpUtil.generateOtp();
     const otpExpireAt = new Date(Date.now() + 10 * 60 * 1000);
