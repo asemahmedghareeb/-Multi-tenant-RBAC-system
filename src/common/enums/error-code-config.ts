@@ -95,4 +95,5 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.BLOG_CATEGORY_ALREADY_EXIST]: 409,
   [ErrorMessageEnum.BLOG_CATEGORY_DOES_NOT_EXIST]: 404,
   [ErrorMessageEnum.TAG_DOES_NOT_EXIST]: 404,
+  [ErrorMessageEnum.CANNOT_DELETE_LAST_API_KEY]: 400,
 };

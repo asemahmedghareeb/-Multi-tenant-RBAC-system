@@ -44,9 +44,9 @@ export class UsersService {
     });
   }
 
-  async find(PaginationDto: PaginationDto) {
+  async find(PaginationDto: PaginationDto, currentUser: any) {
     return await this.userRepository.findPaginated(
-      {},
+      { organization: currentUser.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
@@ -60,9 +60,9 @@ export class UsersService {
     );
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, identity: any) {
     return await this.userRepository.findOneOrFail(
-      { _id: id },
+      { _id: id, organization: identity.organization._id },
       ErrorMessageEnum.NOT_FOUND,
       {
         populate: {
@@ -75,8 +75,11 @@ export class UsersService {
   }
 
   @Transactional()
-  async delete(id: string) {
-    const user = await this.userRepository.findOneOrFail({ _id: id });
+  async delete(id: string, identity: any) {
+    const user = await this.userRepository.findOneOrFail(
+      { _id: id, organization: identity.organization._id },
+      ErrorMessageEnum.FORBIDDEN,
+    );
 
     await this.identityRepository.deleteOne({ _id: user.identity });
     await this.userRepository.deleteOne({ _id: id });
@@ -84,9 +87,9 @@ export class UsersService {
   }
 
   @Transactional()
-  async blockORUnblockUser(id: string) {
+  async blockORUnblockUser(id: string, identity: any) {
     const user = await this.userRepository.findOneOrFail(
-      { _id: id },
+      { _id: id, organization: identity.organization._id },
       ErrorMessageEnum.NOT_FOUND,
       {
         populate: {

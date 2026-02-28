@@ -37,12 +37,13 @@ export class AppExceptionFilter implements ExceptionFilter {
 
     // Localize the message using the error code enum
     const message = this.appHelperService.localize(
-      `errors.${exception.errorCodeEnum}`,
+      `errors.${exception.errorMessageEnum}`,
       {},
       Object.values(LangEnum).includes(lang) ? lang : undefined,
     );
 
     return response.status(exception.getStatus()).send({
+      success: false,
       message,
       Code: exception.getStatus(),
       extension: exception.extensions,

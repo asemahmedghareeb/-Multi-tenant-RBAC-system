@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { AuthMetadata } from 'src/common/types/auth-metadata.type';
@@ -12,7 +6,7 @@ import {
   ApiKey,
   ApiKeyDocument,
 } from '../../../api-keys/entities/api-key.entity';
-import { TIER_LIMITS } from '../../../api-keys/enums/subscribtion-limits.enum';
+import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
 import { SubscriptionTiers } from '../../../api-keys/enums/subscription-tiers.enum';
 import {
   Identity,
@@ -60,7 +54,7 @@ export class AuthGuard implements CanActivate {
     if (useTokenValidation) {
       const token = this.extractTokenFromHeader(request);
       if (!token) {
-        throw new UnauthorizedException('Authentication token is required');
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
       }
       identity = await this.validateToken(token);
     } else {
@@ -84,9 +78,7 @@ export class AuthGuard implements CanActivate {
     if (authMetadata.roles && authMetadata.roles.length > 0) {
       const hasRole = await this.checkRoles(identity, authMetadata.roles);
       if (!hasRole) {
-        throw new ForbiddenException(
-          `Requires one of the following roles: ${authMetadata.roles.join(', ')}`,
-        );
+        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
       }
     }
 
@@ -108,115 +100,115 @@ export class AuthGuard implements CanActivate {
   }
 
   private async validateToken(token: string): Promise<any> {
-    try {
-      const payload = await this.jwtService.verifyAsync(token);
-      const tokenExists = await this.userTokenRepository.model.find({ token });
-      if (!tokenExists) {
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-      }
-      const identity = await this.identityRepository.model
-        .findById(payload.id)
-        .populate([
-          { path: 'organization' },
-          {
-            path: 'role',
-            populate: {
-              path: 'permissions',
-            },
-          },
-        ])
-        .select('-password -__v')
-        .exec();
-
-      if (!identity) {
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-      }
-
-      if (!identity.isVerified) {
-        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-      }
-
-      if (identity.status !== 'ACTIVE') {
-        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-      }
-
-      return identity;
-    } catch (error) {
-      console.error('Unknown token validation error:', error);
+    const payload = await this.jwtService.verifyAsync(token);
+    const tokenExists = await this.userTokenRepository.model.find({ token });
+    if (!tokenExists) {
       throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
     }
+    const identity = await this.identityRepository.model
+      .findById(payload.id)
+      .populate([
+        { path: 'organization' },
+        {
+          path: 'role',
+          populate: {
+            path: 'permissions',
+          },
+        },
+      ])
+      .select('-password -__v')
+      .exec();
+
+    if (!identity) {
+      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
+    }
+
+    if (!identity.isVerified) {
+      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+    }
+
+    if (identity.status !== 'ACTIVE') {
+      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+    }
+
+    return identity;
   }
 
   private async validateApiKey(Key: string): Promise<any> {
-    try {
-      const apiKey = await this.apiKeyRepository.model
-        .findOne({ key: Key })
-        .populate('organization')
-        .exec();
-      if (!apiKey) {
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-      }
-
-      console.log('API Key found:', apiKey.tier);
-      switch (apiKey.tier) {
-        case SubscriptionTiers.FREE:
-          if (
-            apiKey.usageCount >=
-            TIER_LIMITS[SubscriptionTiers.FREE].requestsPerMonth
-          ) {
-            throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-          }
-
-          break;
-        case SubscriptionTiers.PRO:
-          if (
-            apiKey.usageCount >=
-            TIER_LIMITS[SubscriptionTiers.PRO].requestsPerMonth
-          ) {
-            console.log(1);
-            throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-          }
-          break;
-
-        case SubscriptionTiers.ENTERPRISE:
-          if (
-            apiKey.usageCount >=
-            TIER_LIMITS[SubscriptionTiers.ENTERPRISE].requestsPerMonth
-          ) {
-            throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-          }
-          break;
-        default:
-          console.warn(`Unknown subscription tier: ${apiKey.tier}`);
-          throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-      }
-
-      apiKey.usageCount += 1;
-      await apiKey.save();
-
-      const identity = await this.identityRepository.model
-        .findById((apiKey.organization as Organization).identity.toString())
-        .populate([
-          { path: 'organization' },
-          {
-            path: 'role',
-            populate: { path: 'permissions' },
-          },
-        ])
-        .exec();
-
-      if (!identity) {
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-      }
-
-      if (identity.status !== 'ACTIVE') {
-        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-      }
-
-      return identity;
-    } catch (error) {
+    const apiKey = await this.apiKeyRepository.model
+      .findOne({ key: Key })
+      .populate('organization')
+      .exec();
+    if (!apiKey) {
       throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
     }
+
+    switch (apiKey.tier) {
+      case SubscriptionTiers.FREE:
+        if (
+          apiKey.usageCount >=
+          TIER_LIMITS[SubscriptionTiers.FREE].requestsPerMonth
+        ) {
+          throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+        }
+
+        break;
+      case SubscriptionTiers.PRO:
+        if (
+          apiKey.usageCount >=
+          TIER_LIMITS[SubscriptionTiers.PRO].requestsPerMonth
+        ) {
+          throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+        }
+        break;
+
+      case SubscriptionTiers.ENTERPRISE:
+        if (
+          apiKey.usageCount >=
+          TIER_LIMITS[SubscriptionTiers.ENTERPRISE].requestsPerMonth
+        ) {
+          throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+        }
+        break;
+      default:
+        console.warn(`Unknown subscription tier: ${apiKey.tier}`);
+        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
+    }
+
+    if (this.isApiKeyExpired(apiKey.createdAt!)) {
+      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
+    }
+
+    apiKey.usageCount += 1;
+    await apiKey.save();
+
+    const identity = await this.identityRepository.model
+      .findById((apiKey.organization as Organization).identity.toString())
+      .populate([
+        { path: 'organization' },
+        {
+          path: 'role',
+          populate: { path: 'permissions' },
+        },
+      ])
+      .exec();
+
+    if (!identity) {
+      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
+    }
+
+    if (identity.status !== 'ACTIVE') {
+      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+    }
+
+    return identity;
+  }
+
+  private isApiKeyExpired(createdAt: Date): boolean {
+    const now = new Date();
+    const expirationDate = new Date(createdAt);
+    expirationDate.setDate(expirationDate.getDate() + 30);
+    return now > expirationDate;
   }
 
   private extractTokenFromHeader(request: any): string | undefined {

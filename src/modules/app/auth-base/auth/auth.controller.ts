@@ -6,6 +6,8 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetPasswordDto } from './dto/reset-password';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { OrganizationSignInDto } from './dto/organization-signin.dto';
+import { ApiUtil } from 'src/common/utils/response-util';
+import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -13,32 +15,33 @@ export class AuthController {
 
   @Post('organization-signup')
   @ApiBody({ type: OrganizationSignupDto })
-  signUp(@Body() data: OrganizationSignupDto) {
-    return this.authService.signUp(data);
+  async signUp(@Body() data: OrganizationSignupDto) {
+    const result = await this.authService.signUp(data);
+    return ApiUtil.formatResponse(201, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Post('organization-signin')
   @ApiBody({ type: OrganizationSignInDto })
-  signin(@Body() data: OrganizationSignInDto) {
-    return this.authService.signIn(data);
+  async signin(@Body() data: OrganizationSignInDto) {
+    const result = await this.authService.signIn(data);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Post('verify-otp')
   async verifyOtp(@Body() data: VerifyOtpDto) {
     await this.authService.verifyOtp(data);
-    return { message: 'OTP verified successfully' };
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'OTP verified successfully' });
   }
 
   @Post('reset-password')
   async resetPassword(@Body() data: ResetPasswordDto) {
     await this.authService.resetPassword(data);
-    return { message: 'Password reset successfully' };
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'Password reset successfully' });
   }
 
   @Post('request-otp')
   async requestOtp(@Body() data: RequestOtpDto) {
     await this.authService.requestOtp(data);
-
-    return { message: 'OTP sent successfully' };
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'OTP sent successfully' });
   }
 }

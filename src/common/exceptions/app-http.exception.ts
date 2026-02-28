@@ -5,12 +5,12 @@ import { ValidationError } from 'class-validator';
 
 // Custom exception class extending the built-in HttpException.
 export class AppHttpException extends HttpException {
-  public readonly errorCodeEnum: ErrorMessageEnum;
+  public readonly errorMessageEnum: ErrorMessageEnum;
   private readonly httpStatusCode: number;
 
   constructor(
     // The error code enum (message key)
-    errorCodeEnum: ErrorMessageEnum,
+    errorMessageEnum: ErrorMessageEnum,
 
     // Additional metadata to include in the error response
     public extensions: {
@@ -18,13 +18,13 @@ export class AppHttpException extends HttpException {
     } = {},
   ) {
     // Get HTTP status code from config, default to 400
-    const httpStatus = ERROR_CODE_CONFIG[errorCodeEnum] ?? 400;
+    const httpStatus = ERROR_CODE_CONFIG[errorMessageEnum] ?? 400;
     
     // Call parent with error code enum name and HTTP status
-    super(errorCodeEnum, httpStatus);
+    super(errorMessageEnum, httpStatus);
     
     // Store the error code enum
-    this.errorCodeEnum = errorCodeEnum;
+    this.errorMessageEnum = errorMessageEnum;
     this.httpStatusCode = httpStatus;
   }
 }

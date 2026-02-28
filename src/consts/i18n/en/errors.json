@@ -69,5 +69,6 @@
   "EXPIRED_ACCESS_TOKEN": "Expired access token",
   "PASSWORD_RESET_REQUIRED": "The user is required to change his password",
   "PROFILE_COMPLETION_REQUIRED": "this user is required to complete his profile",
-  "EMAIL_MISMATCH" : "Email mismatch"
+  "EMAIL_MISMATCH" : "Email mismatch",
+  "CANNOT_DELETE_LAST_API_KEY": "Cannot delete the last API key of the organization. At least one API key must be maintained."
 }

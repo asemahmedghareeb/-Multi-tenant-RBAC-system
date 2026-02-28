@@ -77,6 +77,8 @@ export class BaseRepository<T extends Document> {
       this.model.countDocuments(filter).exec(),
     ]);
 
+    const pagesCount = Math.ceil(total / limit);
+
     return {
       items,
       pageInfo: {
@@ -85,6 +87,7 @@ export class BaseRepository<T extends Document> {
         hasPrevious: page > 1,
         hasNext: skip + limit < total,
         totalCount: total,
+        pagesCount,
       },
     };
   }

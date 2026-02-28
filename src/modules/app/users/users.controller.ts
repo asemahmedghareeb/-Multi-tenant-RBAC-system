@@ -15,6 +15,8 @@ import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';
 import { Auth } from '../auth-base/auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth-base/auth/decorators/current-user.decorator';
 import { Identity } from '../auth-base/identities/entities/identity.entity';
+import { ApiUtil } from 'src/common/utils/response-util';
+import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
 
 @Controller('users')
 export class UsersController {
@@ -22,34 +24,59 @@ export class UsersController {
 
   @Auth()
   @Post()
-  create(
+  async create(
     @Body() createUserDto: CreateUserDto,
     @CurrentUser() currentUser: Identity,
   ) {
-    return this.usersService.create(createUserDto, currentUser);
+    const result = await this.usersService.create(createUserDto, currentUser);
+    return ApiUtil.formatResponse(201, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth()
   @Get()
-  findPaginated(@Query() paginationDto: PaginationDto) {
-    return this.usersService.find(paginationDto);
+  async findPaginated(
+    @Query() paginationDto: PaginationDto,
+    @CurrentUser() currentUser: Identity,
+  ) {
+    const { items, pageInfo } = await this.usersService.find(
+      paginationDto,
+      currentUser,
+    );
+    return ApiUtil.formatResponse(
+      200,
+      ResponseMessageEnum.SUCCESS,
+      items,
+      pageInfo,
+    );
   }
 
   @Auth()
   @Get(':id')
-  findOne(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.usersService.findOne(id);
+  async findOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @CurrentUser() currentUser: Identity,
+  ) {
+    const result = await this.usersService.findOne(id, currentUser);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth()
   @Delete(':id')
-  deleteOne(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.usersService.delete(id);
+  async deleteOne(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @CurrentUser() currentUser: Identity,
+  ) {
+    await this.usersService.delete(id, currentUser);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS);
   }
 
   @Auth()
   @Patch('block/:id')
-  blockUser(@Param('id', ParseObjectIdPipe) id: string) {
-    return this.usersService.blockORUnblockUser(id);
+  async blockUser(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @CurrentUser() currentUser: Identity,
+  ) {
+    await this.usersService.blockORUnblockUser(id, currentUser);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS);
   }
 }

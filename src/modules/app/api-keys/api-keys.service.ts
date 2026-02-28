@@ -2,7 +2,7 @@ import { Injectable, ForbiddenException } from '@nestjs/common';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { ApiKeyDocument, ApiKey } from './entities/api-key.entity';
-import { TIER_LIMITS } from './enums/subscribtion-limits.enum';
+import { TIER_LIMITS } from './enums/subscription-limits.enum';
 import { SubscriptionTiers } from './enums/subscription-tiers.enum';
 import { ApiKeyGeneratorHelper } from './helpers/api-key-generator.helper';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -88,6 +88,15 @@ export class ApiKeysService {
       apiKey.organization.toString() !== identity.organization._id.toString()
     ) {
       throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+    }
+
+    // Check if this is the last API key of the organization
+    const apiKeyCount = await this.apiKeyRepository.model.countDocuments({
+      organization: apiKey.organization,
+    });
+
+    if (apiKeyCount <= 1) {
+      throw new AppHttpException(ErrorMessageEnum.CANNOT_DELETE_LAST_API_KEY);
     }
 
     await this.apiKeyRepository.deleteOne({ _id: id });

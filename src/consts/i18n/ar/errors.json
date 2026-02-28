@@ -69,5 +69,6 @@
   "EXPIRED_ACCESS_TOKEN": "انتهت صلاحية رمز الوصول",
   "PASSWORD_RESET_REQUIRED": "يجب على المستخدم إعادة تعيين كلمة المرور الخاصة به",
   "PROFILE_COMPLETION_REQUIRED": "هذا المستخدم ملزم بإكمال ملفه الشخصي",
-  "EMAIL_MISMATCH": "البريد الالكتروني غير متطابق"
+  "EMAIL_MISMATCH": "البريد الالكتروني غير متطابق",
+  "CANNOT_DELETE_LAST_API_KEY": "لا يمكن حذف مفتاح API الأخير في المؤسسة. يجب الحفاظ على مفتاح API واحد على الأقل."
 }

@@ -15,6 +15,8 @@ import { UserType } from '../../auth-base/auth/enums/user-type.enum';
 import { CurrentUser } from '../../auth-base/auth/decorators/current-user.decorator';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { CheckUserHasPermissionDto } from '../dto/check-user-has-permission.dto';
+import { ApiUtil } from 'src/common/utils/response-util';
+import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
 
 @Controller('permission')
 export class PermissionController {
@@ -26,7 +28,8 @@ export class PermissionController {
     @Query() paginationDto: PaginationDto,
     @CurrentUser() identity: any,
   ) {
-    return this.permissionService.findAll(paginationDto, identity);
+    const result = await this.permissionService.findAll(paginationDto, identity);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result.items, result.pageInfo);
   }
 
   @Auth({
@@ -37,10 +40,11 @@ export class PermissionController {
     @Body() createPermissionDto: CreatePermissionDto,
     @CurrentUser() currentUser: any,
   ) {
-    return this.permissionService.createPermission(
+    const result = await this.permissionService.createPermission(
       createPermissionDto,
       currentUser,
     );
+    return ApiUtil.formatResponse(201, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })
@@ -49,7 +53,8 @@ export class PermissionController {
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() currentUser: any,
   ) {
-    return this.permissionService.findOne(id, currentUser);
+    const result = await this.permissionService.findOne(id, currentUser);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })
@@ -58,7 +63,8 @@ export class PermissionController {
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() identity: any,
   ) {
-    return this.permissionService.delete(id, identity);
+    const result = await this.permissionService.delete(id, identity);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })
@@ -67,6 +73,7 @@ export class PermissionController {
     @Body() dto: CheckUserHasPermissionDto,
     @CurrentUser() identity: any,
   ) {
-    return this.permissionService.checkUserHasPermission(dto, identity);
+    const result = await this.permissionService.checkUserHasPermission(dto, identity);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 }

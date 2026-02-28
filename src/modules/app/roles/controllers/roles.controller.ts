@@ -17,6 +17,8 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';
 import { AddOrRemovePermissionsDto } from '../dto/add-or-remove-permissions.dto';
 import { AssignRoleToUserDto } from '../dto/assign-role-to-user.dto';
+import { ApiUtil } from 'src/common/utils/response-util';
+import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
 
 @Controller('roles')
 export class RolesController {
@@ -28,7 +30,8 @@ export class RolesController {
     @Body() createRoleDto: AddRoleDto,
     @CurrentUser() identity: any,
   ) {
-    return this.rolesService.create(createRoleDto, identity);
+    const result = await this.rolesService.create(createRoleDto, identity);
+    return ApiUtil.formatResponse(201, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })
@@ -37,7 +40,8 @@ export class RolesController {
     @Param() paginationDto: PaginationDto,
     @CurrentUser() identity: any,
   ) {
-    return this.rolesService.findAll(paginationDto, identity);
+    const result = await this.rolesService.findAll(paginationDto, identity);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result.items, result.pageInfo);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })
@@ -46,7 +50,8 @@ export class RolesController {
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() identity: any,
   ) {
-    return this.rolesService.delete(id, identity);
+    const result = await this.rolesService.delete(id, identity);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })
@@ -55,7 +60,8 @@ export class RolesController {
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() identity: any,
   ) {
-    return this.rolesService.findOne(id, identity);
+    const result = await this.rolesService.findOne(id, identity);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })

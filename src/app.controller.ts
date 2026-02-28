@@ -28,7 +28,7 @@ export class AppController {
   })
   @Post('create-user')
   createUser(@Body() data: any) {
-    return { message: 'Creating user', data };
+    return ApiUtil.formatResponse(201, ResponseMessageEnum.SUCCESS, { message: 'Creating user', data });
   }
 
   /**
@@ -46,7 +46,7 @@ export class AppController {
   })
   @Delete('delete-user/:id')
   deleteUser(@Param('id') id: string) {
-    return { message: 'Deleting user', userId: id };
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'Deleting user', userId: id });
   }
 
   /**
@@ -66,7 +66,7 @@ export class AppController {
   })
   @Get('complex-operation')
   complexOperation() {
-    return { message: 'Requires multiple permissions' };
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'Requires multiple permissions' });
   }
 
   /**
@@ -75,12 +75,12 @@ export class AppController {
   //   @Auth({ roles: [UserRoleEnum.USER] })
   @Get('profile')
   getProfile(@CurrentUser() user: any) {
-    return {
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, {
       id: user._id,
       email: user.email,
       role: user.role,
       isSuperAdmin: user.isSuperAdmin,
-    };
+    });
   }
 
   /**
@@ -89,9 +89,9 @@ export class AppController {
   @Auth({})
   @Get('authenticated-only')
   authenticatedOnly(@CurrentUser() user: any) {
-    return {
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, {
       message: 'Any authenticated user can access this',
       userId: user._id,
-    };
+    });
   }
 }

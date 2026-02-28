@@ -4,19 +4,22 @@ export class ApiUtil {
   static formatResponse(
     statusCode: number,
     message: ResponseMessageEnum,
-    data: { [key: string]: any } = {},
-    totalCount?: number,
-    page?: number,
-    totalPages?: number,
+    data?: any,
+    pageInfo?: {
+      limit: number;
+      page: number;
+      hasPrevious: boolean;
+      hasNext: boolean;
+      totalCount: number;
+      pagesCount: number;
+    },
   ) {
     return {
       success: true,
       statusCode,
       message,
       data,
-      totalCount,
-      page,
-      totalPages,
+      pageInfo,
     };
   }
 }
