@@ -1,42 +1,37 @@
-import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { CreateOrganizationDto } from './dto/create-organization.dto';
-import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import {
   Organization,
   OrganizationDocument,
 } from './entities/organization.entity';
 import { BaseRepository } from 'src/common/repositories/base-repository';
-import { Model } from 'mongoose';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
+import { UpgradeSubscriptionDto } from './dto/upgrade-subscription.dto';
+import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
+import { AppHttpException } from 'src/common/exceptions/app-http.exception';
+import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
 
 @Injectable()
-export class OrganizationService extends BaseRepository<OrganizationDocument> {
+export class OrganizationService {
   constructor(
-    @InjectModel(Organization.name)
-    private readonly organizationModel: Model<OrganizationDocument>,
-  ) {
-    super(organizationModel);
-  }
-  
-  findAll() {
-    return `This action returns all organization`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} organization`;
-  }
-
-  update(id: number, updateOrganizationDto: UpdateOrganizationDto) {
-    return `This action updates a #${id} organization`;
-  }
+    @InjectRepository(Organization)
+    private readonly organizationRepository: BaseRepository<OrganizationDocument>,
+  ) {}
 
   @Transactional()
-  upgradeSubscription(id: string, subscriptionTier: string) {
-    return `This action upgrades subscription of organization #${id} to ${subscriptionTier}`;
-  }
+  async upgradeSubscription(
+    upgradeSubscriptionDto: UpgradeSubscriptionDto,
+    identity: any,
+  ) {
+    const updatedOrganization =
+      await this.organizationRepository.model.findOneAndUpdate(
+        { _id: identity.organization._id },
+        { subscriptionTier: upgradeSubscriptionDto.subscriptionTier },
+      );
 
-  remove(id: number) {
-    return `This action removes a #${id} organization`;
+    if (!updatedOrganization) {
+      throw new AppHttpException(ErrorCodeEnum.NOT_FOUND);
+    }
+
+    return true;
   }
 }

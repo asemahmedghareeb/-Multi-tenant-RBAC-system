@@ -162,8 +162,6 @@ export class PermissionsService implements OnModuleInit {
       ErrorCodeEnum.FORBIDDEN,
     );
 
-    //check if the permission is assigned to any role, if yes throw an error
-
     return this.permissionRepository.deleteOneOrFail({ _id: id });
   }
 
