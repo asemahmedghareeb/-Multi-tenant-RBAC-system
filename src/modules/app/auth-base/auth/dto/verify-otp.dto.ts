@@ -3,7 +3,6 @@ import {
   IsEnum,
   IsNotEmpty,
   IsString,
-  Validate,
 } from 'class-validator';
 import { VerifyReason } from '../enums/otp-verify-reason.enum';
 

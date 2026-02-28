@@ -4,8 +4,7 @@ import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class AppHelperService {
-  constructor(
-    private readonly i18nService: I18nService) {}
+  constructor(private readonly i18nService: I18nService) {}
 
   public generateRandomString(length: number, characterSet: string) {
     let result = '';
@@ -22,8 +21,6 @@ export class AppHelperService {
     return this.generateRandomString(length, characters);
   }
 
-
-
   serializeArabic(text: string): string {
     const rli = '\u2067';
     const pdi = '\u2069';
@@ -31,10 +28,10 @@ export class AppHelperService {
   }
 
   localize(key: string, context: {}, lang?: LangEnum) {
-    const localized = this.i18nService.t(key, {
+    const localized: string = this.i18nService.t(key, {
       args: context,
       lang,
-    }) as string;
+    });
 
     if (lang == LangEnum.AR) return this.serializeArabic(localized);
     return localized;

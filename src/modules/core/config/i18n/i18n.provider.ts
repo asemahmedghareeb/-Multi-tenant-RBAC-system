@@ -10,6 +10,5 @@ export class HeaderResolver implements I18nResolver {
       // Extract the 'lang' property from the HTTP request headers.
       return context.switchToHttp().getRequest().headers.lang;
     }
-
   }
 }

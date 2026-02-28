@@ -30,17 +30,17 @@ const getValidationMessages = (
       };
     }
     // Iterates over each validation constraint for the current error.
-    Object.keys(error.constraints as Object).forEach((constraint) => {
+    Object.keys(error.constraints as object).forEach((constraint) => {
       if (
         !ValidationErrorMessageEnum[
-          (error.constraints as Object)[constraint]
+          (error.constraints as object)[constraint]
         ] ||
         !appHelperService
       )
         return;
       // Translates the validation error message using the i18n service.
-      (error.constraints as Object)[constraint] = appHelperService?.localize(
-        `validation-errors.${(error.constraints as Object)[constraint]}`,
+      (error.constraints as object)[constraint] = appHelperService?.localize(
+        `validation-errors.${(error.constraints as object)[constraint]}`,
         {},
         lang,
       );

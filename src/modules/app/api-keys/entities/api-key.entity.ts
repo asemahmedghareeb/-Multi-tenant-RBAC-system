@@ -29,9 +29,6 @@ export class ApiKey extends AppBaseEntity {
   tier: SubscriptionTiers;
 }
 
-
-
-
 export type ApiKeyDocument = ApiKey;
 
 export const ApiKeySchema = SchemaFactory.createForClass(ApiKey);

@@ -113,7 +113,7 @@ export class AuthService {
     if (user.otp !== data.otp) {
       throw new BadRequestException('Invalid OTP');
     }
-    const validOtp = OtpUtil.verifyOtp(data.otp, user.otp!, user.otpExpireAt!);
+    const validOtp = OtpUtil.verifyOtp(data.otp, user.otp, user.otpExpireAt!);
 
     if (!validOtp) {
       throw new BadRequestException('expired OTP');

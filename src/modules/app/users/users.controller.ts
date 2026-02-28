@@ -16,7 +16,6 @@ import { Auth } from '../auth-base/auth/decorators/auth.decorator';
 import { CurrentUser } from '../auth-base/auth/decorators/current-user.decorator';
 import { Identity } from '../auth-base/identities/entities/identity.entity';
 
-
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

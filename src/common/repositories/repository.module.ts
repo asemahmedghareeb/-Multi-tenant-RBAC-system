@@ -19,7 +19,10 @@ export interface EntityDbModule extends DynamicModule {
  * Usage (in *.db.module.ts):
  *   export const usersDbModule = createDbModule(User, UserSchema);
  */
-export const createDbModule = (entity: Function, schema: any): EntityDbModule => {
+export const createDbModule = (
+  entity: Function,
+  schema: any,
+): EntityDbModule => {
   const mod = MongooseModule.forFeature([
     { name: (entity as any).name, schema },
   ]) as EntityDbModule;

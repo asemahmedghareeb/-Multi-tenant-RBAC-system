@@ -12,12 +12,9 @@ import { AppHelperService } from 'src/modules/core/app-helper/services/app-helpe
 import { ThrottlerException } from '@nestjs/throttler';
 import { ErrorCodeEnum } from '../enums/error-code.enum';
 
-
 @Catch()
 export class AppExceptionFilter implements ExceptionFilter {
   constructor(private readonly appHelperService: AppHelperService) {}
-
-
 
   catch(exception: AppHttpException, host: ArgumentsHost) {
     if (exception instanceof NotFoundException) {
@@ -34,8 +31,6 @@ export class AppExceptionFilter implements ExceptionFilter {
       exception = new AppHttpException(500);
     }
 
-
-
     const httpHost = host.switchToHttp();
     const response: Response = httpHost.getResponse();
     const request: Request = httpHost.getRequest();
@@ -43,7 +38,7 @@ export class AppExceptionFilter implements ExceptionFilter {
     const message = this.appHelperService.localize(
       `errors.${exception.message}`,
       {},
-      Object.values(LangEnum).includes(lang as LangEnum) ? lang : undefined,
+      Object.values(LangEnum).includes(lang) ? lang : undefined,
     );
     return response.status(exception.getStatus()).send({
       message,

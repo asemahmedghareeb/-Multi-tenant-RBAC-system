@@ -12,7 +12,7 @@ export const I18nConfig: I18nAsyncOptions = {
     // Disables the built-in middleware provided by nestjs-i18n.
     // This is useful if you want to handle language resolution manually or through custom middleware.
     disableMiddleware: true,
-    
+
     // Configuration for loading localization files.
     loaderOptions: {
       // Specifies the directory where the localization files are stored.

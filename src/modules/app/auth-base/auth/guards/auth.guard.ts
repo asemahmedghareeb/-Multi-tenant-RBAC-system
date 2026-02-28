@@ -6,15 +6,13 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService, TokenExpiredError, JsonWebTokenError } from '@nestjs/jwt';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { JwtService } from '@nestjs/jwt';
 import { AuthMetadata } from 'src/common/types/auth-metadata.type';
 import {
   ApiKey,
   ApiKeyDocument,
 } from '../../../api-keys/entities/api-key.entity';
-import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
+import { TIER_LIMITS } from '../../../api-keys/enums/subscribtion-limits.enum';
 import { SubscriptionTiers } from '../../../api-keys/enums/subscription-tiers.enum';
 import {
   Identity,

@@ -4,7 +4,6 @@ import {
   IsString,
   MaxLength,
   MinLength,
-  Validate,
 } from 'class-validator';
 
 export class ResetPasswordDto {

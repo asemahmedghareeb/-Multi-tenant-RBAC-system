@@ -1,4 +1,3 @@
-import { ErrorCodeEnum } from 'src/common/enums/error-code.enum';
 import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
 import { DefaultPermissionActionsEnum } from './common/enums/default-permissions.enum';
 import { Auth } from './modules/app/auth-base/auth/decorators/auth.decorator';
@@ -7,7 +6,6 @@ import { UserType } from './modules/app/auth-base/auth/enums/user-type.enum';
 import { Organization } from './modules/app/organization/entities/organization.entity';
 import { User } from './modules/app/users/entities/user.entity';
 import { Identity } from './modules/app/auth-base/identities/entities/identity.entity';
-import { AppHttpException } from './common/exceptions/app-http.exception';
 
 import { ApiUtil } from './common/utils/response-util';
 import { ResponseMessageEnum } from './common/enums/response-message.enum';

@@ -48,7 +48,9 @@ export class BaseRepository<T extends Document> {
     if (select) query.select(select);
     const result = await query.exec();
     if (result) {
-      throw new AppHttpException(errorMessage || ErrorCodeEnum.BAD_REQUEST_EXCEPTION);
+      throw new AppHttpException(
+        errorMessage || ErrorCodeEnum.BAD_REQUEST_EXCEPTION,
+      );
     }
   }
 
@@ -85,7 +87,7 @@ export class BaseRepository<T extends Document> {
         totalCount: total,
       },
     };
-  } 
+  }
 
   /** Update multiple entities matching filter with input. */
   async updateMany(

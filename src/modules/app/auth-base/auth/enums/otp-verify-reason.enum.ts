@@ -1,4 +1,4 @@
 export enum VerifyReason {
-    VERIFY = 'VERIFY',
-    RESET = 'RESET',
+  VERIFY = 'VERIFY',
+  RESET = 'RESET',
 }

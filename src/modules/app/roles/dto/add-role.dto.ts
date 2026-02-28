@@ -7,7 +7,6 @@ import {
   MinLength,
 } from 'class-validator';
 
-
 export class AddRoleDto {
   @MaxLength(20)
   @MinLength(3)

@@ -12,4 +12,3 @@ export class OtpUtil {
     return isValid && !isExpired;
   }
 }
- 

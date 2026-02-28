@@ -6,16 +6,16 @@ import { Identity } from '../../identities/entities/identity.entity';
 
 @GeneratePermissions()
 @Schema({
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
 })
 export class UserToken extends AppBaseEntity {
-    @Prop()
-    token: string;
+  @Prop()
+  token: string;
 
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Identity' })
-    user: string | Identity;
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Identity' })
+  user: string | Identity;
 }
 
 export type UserTokenDocument = UserToken;

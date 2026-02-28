@@ -59,8 +59,6 @@ export type IdentityDocument = Identity & IdentityMethods;
 
 export const IdentitySchema = SchemaFactory.createForClass(Identity);
 
-
-
 IdentitySchema.virtual('user', {
   ref: 'User',
   localField: '_id',

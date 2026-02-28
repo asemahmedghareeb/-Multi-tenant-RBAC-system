@@ -29,9 +29,6 @@ import { RepositoryModule } from 'src/common/repositories/repository.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthHelper, AuthGuard],
-  exports: [
-    AuthGuard,
-    RepositoryModule,
-  ],
+  exports: [AuthGuard, RepositoryModule],
 })
 export class AuthModule {}

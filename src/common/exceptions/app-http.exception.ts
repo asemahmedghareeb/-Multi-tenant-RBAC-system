@@ -8,7 +8,6 @@ export class AppHttpException extends HttpException {
   constructor(
     // The error code representing the type of error (e.g., BAD_REQUEST_EXCEPTION).
     errorCode: ErrorCodeEnum,
-    
 
     // Additional metadata to include in the error response.
     // This can include validation errors, timestamps, or other custom data.

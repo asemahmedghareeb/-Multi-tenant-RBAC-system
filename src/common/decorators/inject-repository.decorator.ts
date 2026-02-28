@@ -49,7 +49,8 @@ export const createRepositoryProvider = (entity: Function) => {
 
   return {
     provide: getRepositoryToken(entity),
-    useFactory: (model: Model<any>): BaseRepository<any> => new repositoryClass(model),
+    useFactory: (model: Model<any>): BaseRepository<any> =>
+      new repositoryClass(model),
     inject: [getModelToken(entity.name)],
   };
 };

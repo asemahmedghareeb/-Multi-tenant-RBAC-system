@@ -1,8 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { UserTokensService } from "../../user-tokens/user-tokens.service";
-import { ITokenPayload } from "../interfaces/token-payload.interface";
-
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { UserTokensService } from '../../user-tokens/user-tokens.service';
+import { ITokenPayload } from '../interfaces/token-payload.interface';
 
 @Injectable()
 export class AuthHelper {

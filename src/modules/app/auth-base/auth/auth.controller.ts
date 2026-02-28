@@ -1,7 +1,7 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { OrganizationSignupDto } from './dto/organization-signup.dto';
-import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { ApiBody } from '@nestjs/swagger';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetPasswordDto } from './dto/reset-password';
 import { RequestOtpDto } from './dto/request-otp.dto';
@@ -17,15 +17,11 @@ export class AuthController {
     return this.authService.signUp(data);
   }
 
-
   @Post('organization-signin')
   @ApiBody({ type: OrganizationSignInDto })
   signin(@Body() data: OrganizationSignInDto) {
     return this.authService.signIn(data);
   }
-
-
-
 
   @Post('verify-otp')
   async verifyOtp(@Body() data: VerifyOtpDto) {

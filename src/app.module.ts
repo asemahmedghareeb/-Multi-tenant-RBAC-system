@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { ApiKeysModule } from './modules/app/api-keys/api-keys.module';
 import { AuthModule } from './modules/app/auth-base/auth/auth.module';
 import { IdentitiesModule } from './modules/app/auth-base/identities/identities.module';
@@ -31,7 +30,7 @@ import { ThrottlerConfigModule } from './modules/core/config/throttler.module';
     ThrottlerConfigModule,
     AuthModule,
     IdentitiesModule,
-    OrganizationModule,  
+    OrganizationModule,
     ApiKeysModule,
     RolesModule,
     UsersModule,
@@ -39,7 +38,6 @@ import { ThrottlerConfigModule } from './modules/core/config/throttler.module';
     AppHelperModule,
     I18nModule.forRootAsync(I18nConfig),
   ],
-  controllers: [AppController],
   providers: [
     {
       provide: APP_FILTER,

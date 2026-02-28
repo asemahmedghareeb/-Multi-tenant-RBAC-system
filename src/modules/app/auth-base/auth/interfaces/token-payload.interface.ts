@@ -1,4 +1,4 @@
 export interface ITokenPayload {
-    id: string;
-    userType: string;
+  id: string;
+  userType: string;
 }

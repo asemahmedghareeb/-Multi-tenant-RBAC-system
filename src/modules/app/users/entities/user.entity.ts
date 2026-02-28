@@ -5,7 +5,6 @@ import { AppBaseEntity } from 'src/common/entities/app-base.entity';
 import { Organization } from '../../organization/entities/organization.entity';
 import { Identity } from '../../auth-base/identities/entities/identity.entity';
 
-
 @GeneratePermissions()
 @Schema({
   timestamps: true,

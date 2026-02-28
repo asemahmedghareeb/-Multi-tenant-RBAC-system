@@ -15,7 +15,6 @@ import { UserType } from '../../auth-base/auth/enums/user-type.enum';
 import { AddRoleDto } from '../dto/add-role.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';
-import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { AddOrRemovePermissionsDto } from '../dto/add-or-remove-permissions.dto';
 import { AssignRoleToUserDto } from '../dto/assign-role-to-user.dto';
 
@@ -88,9 +87,6 @@ export class RolesController {
   ) {
     return this.rolesService.removeRoleFromUser(assignRoleToUserDto, identity);
   }
-
-
-
 
   @Auth({ roles: [UserType.ORGANIZATION] })
   @Patch('remove-permissions-from-role')

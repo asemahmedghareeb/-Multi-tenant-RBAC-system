@@ -7,17 +7,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-
 import { PermissionsService } from '../services/permissions.service';
 import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Auth } from '../../auth-base/auth/decorators/auth.decorator';
 import { UserType } from '../../auth-base/auth/enums/user-type.enum';
 import { CurrentUser } from '../../auth-base/auth/decorators/current-user.decorator';
-import { Permission } from '../entities/permission.entity';
-import { DefaultPermissionActionsEnum } from 'src/common/enums/default-permissions.enum';
-import { CreatePermissionDto } from '../dto/create-permission.dto';import { CheckUserHasPermissionDto } from '../dto/check-user-has-permission.dto';
-
+import { CreatePermissionDto } from '../dto/create-permission.dto';
+import { CheckUserHasPermissionDto } from '../dto/check-user-has-permission.dto';
 
 @Controller('permission')
 export class PermissionController {

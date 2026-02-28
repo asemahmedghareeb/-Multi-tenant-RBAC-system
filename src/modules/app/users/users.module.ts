@@ -8,7 +8,11 @@ import { RepositoryModule } from 'src/common/repositories/repository.module';
 
 @Module({
   imports: [
-    RepositoryModule.fromDbModules([usersDbModule, organizationDbModule, identitiesDbModule]),
+    RepositoryModule.fromDbModules([
+      usersDbModule,
+      organizationDbModule,
+      identitiesDbModule,
+    ]),
   ],
   controllers: [UsersController],
   providers: [UsersService],

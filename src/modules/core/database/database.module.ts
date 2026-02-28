@@ -8,4 +8,3 @@ export const databaseRootModule = MongooseModule.forRootAsync({
     uri: configService.get<string>('DATABASE_URL'),
   }),
 });
- 

@@ -44,7 +44,7 @@ export class PermissionsService implements OnModuleInit {
       for (const action of Object.values(permissionEnum)) {
         permissionsToCreate.push({
           resource: resourceName,
-          action: action as string,
+          action: action,
         });
       }
     }

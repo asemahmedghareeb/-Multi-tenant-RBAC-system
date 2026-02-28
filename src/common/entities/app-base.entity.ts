@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Schema } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 /**

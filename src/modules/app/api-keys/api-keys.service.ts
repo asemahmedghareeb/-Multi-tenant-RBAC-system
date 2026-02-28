@@ -1,10 +1,8 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { ApiKeyDocument, ApiKey } from './entities/api-key.entity';
-import { TIER_LIMITS } from './enums/subscription-limits.enum';
+import { TIER_LIMITS } from './enums/subscribtion-limits.enum';
 import { SubscriptionTiers } from './enums/subscription-tiers.enum';
 import { ApiKeyGeneratorHelper } from './helpers/api-key-generator.helper';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';

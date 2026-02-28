@@ -1,8 +1,8 @@
-import { UserType } from "src/modules/app/auth-base/auth/enums/user-type.enum";
+import { UserType } from 'src/modules/app/auth-base/auth/enums/user-type.enum';
 
 export interface PermissionRequirement {
   target: string;
-  action: string; 
+  action: string;
 }
 
 export interface AuthMetadata {
