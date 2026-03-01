@@ -1,15 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
-import { AppBaseEntity } from 'src/common/entities/app-base.entity';
+import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
 
 import { Schema as MongooseSchema } from 'mongoose';
 import { Organization } from '../../organization/entities/organization.entity';
 @GeneratePermissions()
-@Schema({
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
-})
+@Schema(SCHEMA_OPTIONS)
 export class Permission extends AppBaseEntity {
   @Prop({
     type: MongooseSchema.Types.ObjectId,

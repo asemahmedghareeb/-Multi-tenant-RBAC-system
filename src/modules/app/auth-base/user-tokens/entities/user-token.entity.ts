@@ -1,15 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
-import { AppBaseEntity } from 'src/common/entities/app-base.entity';
+import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
 import { Identity } from '../../identities/entities/identity.entity';
 
 @GeneratePermissions()
-@Schema({
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
-})
+@Schema(SCHEMA_OPTIONS)
 export class UserToken extends AppBaseEntity {
   @Prop()
   token: string;

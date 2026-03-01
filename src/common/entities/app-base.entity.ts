@@ -1,28 +1,22 @@
-import { Schema } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Prop } from '@nestjs/mongoose';
+import { Document, SchemaOptions } from 'mongoose';
 
-/**
- * Base entity class for all Mongoose schemas
- * Provides common fields and the permissionsTarget property
- */
-@Schema({ timestamps: true })
-export abstract class AppBaseEntity extends Document {
-  /**
-   * Automatically managed by Mongoose
-   */
+export const SCHEMA_OPTIONS: SchemaOptions = {
+  timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+};
+
+export class AppBaseEntity extends Document {
+  @Prop()
   createdAt?: Date;
 
-  /**
-   * Automatically managed by Mongoose
-   */
+  @Prop()
   updatedAt?: Date;
 
-  deletedAt?: Date;
+  @Prop({ default: false })
+  isDeleted?: boolean;
 
-  /**
-   * Returns the entity name in lowercase for permission targeting
-   * Override this in child classes if you need a custom target name
-   */
   static get permissionsTarget(): string {
     return this.name.toLowerCase();
   }

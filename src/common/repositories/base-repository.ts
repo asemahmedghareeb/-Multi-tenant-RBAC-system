@@ -17,11 +17,28 @@ export interface QueryOptions {
 export class BaseRepository<T extends Document> {
   constructor(public readonly model: Model<T>) {}
 
+  /** Find a single entity, returns null if not found. */
+  async findOne<R = T>(
+    filter: Record<string, any>,
+    options: QueryOptions = {},
+    mapFn?: (item: T) => R,
+  ): Promise<R | null> {
+    let query = this.model.findOne(filter);
+    const { populate, lean, select } = options;
+    if (populate) query = query.populate(populate);
+    if (lean) query.lean();
+    if (select) query.select(select);
+    const result = await query.exec();
+    if (!result) return null;
+    return mapFn ? mapFn(result) : (result as unknown as R);
+  }
+
   /** Throw NotFoundException when an entity matching options does not exist. */
   async findOneOrFail(
     filter: Record<string, any>,
     errorMessage?: ErrorMessageEnum,
     options: QueryOptions = {},
+    mapFn?: (item: T) => any,
   ): Promise<T> {
     let query = this.model.findOne(filter);
     const { populate, lean, select } = options;
@@ -32,7 +49,7 @@ export class BaseRepository<T extends Document> {
     if (!result) {
       throw new AppHttpException(errorMessage || ErrorMessageEnum.NOT_FOUND);
     }
-    return result;
+    return mapFn ? mapFn(result) : result;
   }
 
   /** Throw ForbiddenException when an entity matching options exists. */
@@ -55,12 +72,13 @@ export class BaseRepository<T extends Document> {
   }
 
   /** Find entities with pagination, sorting, relations (population), and selection. */
-  async findPaginated(
+  async findPaginated<R = T>(
     filter: Record<string, any> = {},
     sort?: string | { [key: string]: SortOrder },
     page: number = 1,
     limit: number = 15,
     options: QueryOptions = {},
+    mapFn?: (item: T) => R,
   ) {
     const skip = (page - 1) * limit;
     const { populate, lean, select } = options;
@@ -80,7 +98,7 @@ export class BaseRepository<T extends Document> {
     const pagesCount = Math.ceil(total / limit);
 
     return {
-      items,
+      items: mapFn ? items.map(mapFn) : items,
       pageInfo: {
         limit,
         page,
@@ -110,13 +128,14 @@ export class BaseRepository<T extends Document> {
     filter: Record<string, any>,
     update: UpdateQuery<T>,
   ): Promise<T[]> {
-    return this.updateMany(filter, { ...update, deletedAt: new Date() });
+    return this.updateMany(filter, { ...update, isDeleted: true });
   }
 
   /** Create and save a single entity. */
-  async createOne(input: Partial<T>): Promise<T> {
+  async createOne(input: Partial<T>, mapFn?: (item: T) => any): Promise<T> {
     const entity = new this.model(input);
-    return entity.save();
+    const savedEntity = await entity.save();
+    return mapFn ? mapFn(savedEntity) : savedEntity;
   }
 
   /** Create and save multiple entities. */

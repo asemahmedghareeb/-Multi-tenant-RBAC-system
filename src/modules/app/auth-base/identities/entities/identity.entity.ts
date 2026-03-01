@@ -3,16 +3,15 @@ import { Schema as MongooseSchema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { IdentityStatus } from '../enums/identity-status.enum';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
-import { AppBaseEntity } from 'src/common/entities/app-base.entity';
+import {
+  AppBaseEntity,
+  SCHEMA_OPTIONS,
+} from 'src/common/entities/app-base.entity';
 import { UserType } from '../../auth/enums/user-type.enum';
 import { Role } from 'src/modules/app/roles/entities/role.entity';
 
 @GeneratePermissions()
-@Schema({
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
-})
+@Schema(SCHEMA_OPTIONS)
 export class Identity extends AppBaseEntity {
   @Prop()
   email: string;
@@ -58,13 +57,6 @@ export interface IdentityMethods {
 export type IdentityDocument = Identity & IdentityMethods;
 
 export const IdentitySchema = SchemaFactory.createForClass(Identity);
-
-IdentitySchema.virtual('user', {
-  ref: 'User',
-  localField: '_id',
-  foreignField: 'identity',
-  justOne: true,
-});
 
 IdentitySchema.virtual('organization', {
   ref: 'Organization',

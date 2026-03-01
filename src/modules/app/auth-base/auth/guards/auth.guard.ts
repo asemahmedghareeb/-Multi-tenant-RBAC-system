@@ -178,7 +178,7 @@ export class AuthGuard implements CanActivate {
     if (this.isApiKeyExpired(apiKey.createdAt!)) {
       throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
     }
-
+ 
     apiKey.usageCount += 1;
     await apiKey.save();
 

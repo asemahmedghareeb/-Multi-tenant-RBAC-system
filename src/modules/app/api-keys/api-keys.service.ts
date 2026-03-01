@@ -72,19 +72,14 @@ export class ApiKeysService {
   }
 
   async findAll(PaginationDto: PaginationDto, identity: any) {
-    const apiKeys = await this.apiKeyRepository.findPaginated(
+    return this.apiKeyRepository.findPaginated(
       { organization: identity.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
+      {},
+      (apiKey) => this.returnObject.apiKey(apiKey),
     );
-    return {
-      items: apiKeys.items.map((apiKey) => {
-        return this.returnObject.apiKey(apiKey);
-      }),
-      pageInfo: apiKeys.pageInfo,
-    };
-  
   }
 
   findOne(id: string) {

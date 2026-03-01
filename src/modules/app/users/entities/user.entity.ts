@@ -1,15 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
-import { AppBaseEntity } from 'src/common/entities/app-base.entity';
+import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
 import { Organization } from '../../organization/entities/organization.entity';
 import { Identity } from '../../auth-base/identities/entities/identity.entity';
 import { Role } from '../../roles/entities/role.entity';
 
 @GeneratePermissions()
-@Schema({
-  timestamps: true,
-})
+@Schema(SCHEMA_OPTIONS)
 export class User extends AppBaseEntity {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Organization' })
   organization: string | Organization;

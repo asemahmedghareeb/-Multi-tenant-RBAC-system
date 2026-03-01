@@ -44,29 +44,28 @@ export class RolesService {
       ],
     });
 
-    return this.roleRepository.createOne({
-      ...createRoleDto,
-      name: {
-        ar: createRoleDto.nameAr,
-        en: createRoleDto.nameEn,
+    return this.roleRepository.createOne(
+      {
+        ...createRoleDto,
+        name: {
+          ar: createRoleDto.nameAr,
+          en: createRoleDto.nameEn,
+        },
+        organization: identity.organization._id,
       },
-      organization: identity.organization._id,
-    });
+      this.returnObject.role,
+    );
   }
 
   async findAll(paginationDto: PaginationDto, identity: any) {
-    const roles = await this.roleRepository.findPaginated(
+    return this.roleRepository.findPaginated(
       { organization: identity.organization._id },
       { 'name.en': 1, 'name.ar': 1 },
       paginationDto.page,
       paginationDto.limit,
+      {},
+      this.returnObject.role,
     );
-    return {
-      items: roles.items.map((role) => {
-        return this.returnObject.role(role);
-      }),
-      pageInfo: roles.pageInfo,
-    }
   }
 
   async delete(id: string, identity: any) {
@@ -80,10 +79,15 @@ export class RolesService {
   }
 
   async findOne(id: string, identity: any) {
-    return this.roleRepository.findOneOrFail({
-      _id: id,
-      organization: identity.organization._id,
-    });
+    return this.roleRepository.findOneOrFail(
+      {
+        _id: id,
+        organization: identity.organization._id,
+      },
+      undefined,
+      undefined,
+      this.returnObject.role,
+    );
   }
 
   async assignPermissionsToRole(

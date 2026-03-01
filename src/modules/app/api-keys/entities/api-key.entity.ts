@@ -2,15 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { SubscriptionTiers } from '../enums/subscription-tiers.enum';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
-import { AppBaseEntity } from 'src/common/entities/app-base.entity';
+import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
 import { Organization } from 'src/modules/app/organization/entities/organization.entity';
 
 @GeneratePermissions()
-@Schema({
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
-})
+@Schema(SCHEMA_OPTIONS)
 export class ApiKey extends AppBaseEntity {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Organization' })
   organization: string | Organization;

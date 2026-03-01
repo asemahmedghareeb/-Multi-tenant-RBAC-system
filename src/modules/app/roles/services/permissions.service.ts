@@ -131,18 +131,14 @@ export class PermissionsService implements OnModuleInit {
   }
 
   async findAll(PaginationDto: PaginationDto, identity: any) {
-    const permissions = await this.permissionRepository.findPaginated(
+    return await this.permissionRepository.findPaginated(
       { organization: identity.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
+      {},
+      this.returnObject.permission,
     );
-    return {
-      items: permissions.items.map((permission) => {
-        return this.returnObject.permission(permission);
-      }),
-      pageInfo: permissions.pageInfo,
-    };
   }
 
   async findOne(id: string, identity: any) {
@@ -154,9 +150,9 @@ export class PermissionsService implements OnModuleInit {
       ErrorMessageEnum.FORBIDDEN,
     );
   }
-
+z
   async delete(id: string, identity: any) {
-    const permission = await this.permissionRepository.findOneOrFail(
+    await this.permissionRepository.findOneOrFail(
       {
         _id: id,
         organization: identity.organization._id,
@@ -177,28 +173,21 @@ export class PermissionsService implements OnModuleInit {
       {
         populate: [
           {
-            path: 'identity',
-            populate: [
-              {
-                path: 'role',
-                populate: [
-                  {
-                    path: 'permissions',
-                  },
-                ],
-              },
-            ],
+            path: 'role',
+            populate: {
+              path: 'permissions',
+            },
           },
         ],
       },
     );
 
-    if (userDoc.identity.status === IdentityStatus.BLOCKED) {
+    if (userDoc.isBlocked === true) {
       return false;
     }
 
     const hasPermission =
-      userDoc.identity.role?.permissions.some(
+      userDoc.role?.permissions.some(
         (p: any) => p._id.toString() === dto.permissionId,
       ) || false;
 
