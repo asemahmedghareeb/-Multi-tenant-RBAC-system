@@ -45,12 +45,12 @@ export class ApiKeysController {
   }
 
   @Delete(':id')
-  @Auth({  roles: [UserType.ORGANIZATION] })
+  @Auth({ validateToken: true, roles: [UserType.ORGANIZATION] })
   async remove(
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() identity: Identity,
   ) {
-    const result = await this.apiKeysService.remove(id, identity);
+    await this.apiKeysService.remove(id, identity);
     return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS);
   }
 }

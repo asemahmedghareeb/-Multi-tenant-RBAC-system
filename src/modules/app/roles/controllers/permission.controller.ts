@@ -28,8 +28,15 @@ export class PermissionController {
     @Query() paginationDto: PaginationDto,
     @CurrentUser() identity: any,
   ) {
-    const result = await this.permissionService.findAll(paginationDto, identity);
-    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result.items, result.pageInfo);
+    const result = await this.permissionService.findAll(
+      paginationDto,
+      identity,
+    );
+    return ApiUtil.formatResponse(
+      200,
+      ResponseMessageEnum.SUCCESS,
+      result.items,
+    );
   }
 
   @Auth({
@@ -73,7 +80,10 @@ export class PermissionController {
     @Body() dto: CheckUserHasPermissionDto,
     @CurrentUser() identity: any,
   ) {
-    const result = await this.permissionService.checkUserHasPermission(dto, identity);
+    const result = await this.permissionService.checkUserHasPermission(
+      dto,
+      identity,
+    );
     return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 }

@@ -33,7 +33,7 @@ export class AppHelperService {
       lang,
     });
 
-    if (lang == LangEnum.AR) return this.serializeArabic(localized);
+    // if (lang == LangEnum.AR) return this.serializeArabic(localized);
     return localized;
   }
 }

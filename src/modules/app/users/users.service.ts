@@ -12,6 +12,7 @@ import {
 } from '../auth-base/identities/entities/identity.entity';
 import { IdentityStatus } from '../auth-base/identities/enums/identity-status.enum';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
+import { ReturnObject } from 'src/common/return-object/return-object';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,7 @@ export class UsersService {
     private readonly identityRepository: BaseRepository<IdentityDocument>,
     @InjectRepository(User)
     private readonly userRepository: BaseRepository<UserDocument>,
+    private readonly returnObject: ReturnObject,
   ) {}
 
   @Transactional()
@@ -45,7 +47,7 @@ export class UsersService {
   }
 
   async find(PaginationDto: PaginationDto, currentUser: any) {
-    return await this.userRepository.findPaginated(
+    return this.userRepository.findPaginated(
       { organization: currentUser.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
@@ -61,17 +63,18 @@ export class UsersService {
   }
 
   async findOne(id: string, identity: any) {
-    return await this.userRepository.findOneOrFail(
+    const user = await this.userRepository.findOneOrFail(
       { _id: id, organization: identity.organization._id },
       ErrorMessageEnum.NOT_FOUND,
       {
         populate: {
           path: 'identity',
-          select: '-password -__v',
         },
         lean: true,
       },
     );
+
+    return this.returnObject.user(user, user.identity);
   }
 
   @Transactional()
