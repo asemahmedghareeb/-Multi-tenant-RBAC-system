@@ -11,6 +11,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { AuthHelper } from './helpers/auth.helper';
+import { AuthValidationService } from './helpers/auth-validation.service';
 import { RepositoryModule } from 'src/common/repositories/repository.module';
 
 @Global()
@@ -28,7 +29,7 @@ import { RepositoryModule } from 'src/common/repositories/repository.module';
     ApiKeysModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthHelper, AuthGuard],
-  exports: [AuthGuard, RepositoryModule],
+  providers: [AuthService, AuthHelper, AuthValidationService, AuthGuard],
+  exports: [AuthGuard, AuthValidationService, RepositoryModule],
 })
 export class AuthModule {}

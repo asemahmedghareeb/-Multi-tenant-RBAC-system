@@ -74,5 +74,21 @@
   "USER_ALREADY_EXIST": "User already exist",
   "API_KEY_LIMIT_REACHED_FREE": "Free tier allows only 1 API key",
   "API_KEY_LIMIT_REACHED_PRO": "Pro tier API key limit reached",
-  "API_KEY_LIMIT_REACHED_ENTERPRISE": "Enterprise tier API key limit reached"
+  "API_KEY_LIMIT_REACHED_ENTERPRISE": "Enterprise tier API key limit reached",
+  "MISSING_AUTHORIZATION_HEADER": "Authorization header is missing. Please provide a Bearer token or an API key to access this resource",
+  "INVALID_BEARER_TOKEN_FORMAT": "Invalid authorization format. Expected 'Bearer <token>' format in the Authorization header",
+  "INVALID_TOKEN": "The token provided is invalid or malformed. Please check your token and try again",
+  "TOKEN_NOT_FOUND_IN_SESSION": "Your authentication session is no longer valid. Please log in again to continue",
+  "TOKEN_VERIFICATION_FAILED": "Token verification failed. The token may be expired or tampered. Please log in again",
+  "MISSING_API_KEY_HEADER": "API key is missing. Please provide the 'x-api-key' header to access this resource",
+  "INVALID_API_KEY": "The API key provided is invalid. Please check your API key and try again",
+  "API_KEY_EXPIRED": "Your API key has expired. Please generate a new API key to continue using the service",
+  "API_KEY_USAGE_LIMIT_EXCEEDED_FREE": "Your free tier API key has reached the monthly request limit. Please upgrade your subscription to continue",
+  "API_KEY_USAGE_LIMIT_EXCEEDED_PRO": "Your pro tier API key has reached the monthly request limit. Please upgrade your subscription or wait for the monthly reset",
+  "API_KEY_USAGE_LIMIT_EXCEEDED_ENTERPRISE": "Your enterprise tier API key has reached the monthly request limit. Please contact support to increase your limit",
+  "USER_IDENTITY_NOT_FOUND": "User identity not found in the system. The identity associated with this authentication may have been deleted",
+  "USER_EMAIL_NOT_VERIFIED": "Your email address has not been verified. Please verify your email address to access this resource",
+  "USER_ACCOUNT_INACTIVE": "Your account is inactive. Please contact support if you believe this is an error",
+  "INSUFFICIENT_PERMISSIONS": "You do not have the required permissions to access this resource. Please contact your administrator if you believe this is an error",
+  "INSUFFICIENT_ROLE": "Your user role does not have access to this resource. Please contact your administrator to request the necessary permissions"
 }

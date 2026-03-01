@@ -11,6 +11,7 @@ import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { IdentityStatus } from '../../auth-base/identities/enums/identity-status.enum';
 import { User, UserDocument } from '../../users/entities/user.entity';
 import { ReturnObject } from 'src/common/return-object/return-object';
+import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 
 @Injectable()
 export class PermissionsService implements OnModuleInit {
@@ -148,7 +149,7 @@ export class PermissionsService implements OnModuleInit {
       ErrorMessageEnum.FORBIDDEN,
     );
   }
-z
+
   async delete(id: string, identity: any) {
     await this.permissionRepository.findOneOrFail(
       {
@@ -189,6 +190,9 @@ z
         (p: any) => p._id.toString() === dto.permissionId,
       ) || false;
 
+    if (!hasPermission) {
+       throw new AppHttpException(ErrorMessageEnum.INSUFFICIENT_PERMISSIONS);
+    }
     return hasPermission;
   }
 }

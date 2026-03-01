@@ -1,44 +1,56 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
 import { AuthMetadata } from 'src/common/types/auth-metadata.type';
-import {
-  ApiKey,
-  ApiKeyDocument,
-} from '../../../api-keys/entities/api-key.entity';
-import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
-import { SubscriptionTiers } from '../../../api-keys/enums/subscription-tiers.enum';
-import {
-  Identity,
-  IdentityDocument,
-} from '../../identities/entities/identity.entity';
-import { Organization } from '../../../organization/entities/organization.entity';
-import { Permission } from '../../../roles/entities/permission.entity';
-import { Role } from '../../../roles/entities/role.entity';
-import {
-  UserToken,
-  UserTokenDocument,
-} from '../../user-tokens/entities/user-token.entity';
 import { AUTH_METADATA_KEY } from '../decorators/auth.decorator';
 import { UserType } from '../enums/user-type.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
-import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
-import { BaseRepository } from 'src/common/repositories/base-repository';
+import { AuthValidationService } from '../helpers/auth-validation.service';
 
+/**
+ * AuthGuard - Comprehensive authentication and authorization guard
+ *
+ * This guard provides multi-layer security validation:
+ * 1. **Authentication**: Validates user identity via JWT token or API key
+ * 2. **Authorization**: Enforces role-based (RBAC) and permission-based (PBAC) access control
+ * 3. **Account Validation**: Checks user verification status and account status
+ * 4. **Rate Limiting**: Enforces API key usage limits based on subscription tier
+ * 5. **Token Session Validation**: Ensures tokens exist in the session store
+ *
+ * Error Handling:
+ * - Provides descriptive, localized error messages for all failure scenarios
+ * - Logs detailed warnings for debugging and monitoring
+ * - Returns appropriate HTTP status codes based on error type
+ *
+ * Supported Authentication Methods:
+ * - Bearer JWT tokens: Authorization header with format "Bearer <token>"
+ * - API Keys: x-api-key header for service-to-service authentication
+ *
+ * Dependencies:
+ * - AuthValidationService: Handles all authentication/authorization logic
+ */
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
-    private readonly jwtService: JwtService,
-    @InjectRepository(Identity)
-    private readonly identityRepository: BaseRepository<IdentityDocument>,
-    @InjectRepository(ApiKey)
-    private readonly apiKeyRepository: BaseRepository<ApiKeyDocument>,
-    @InjectRepository(UserToken)
-    private readonly userTokenRepository: BaseRepository<UserTokenDocument>,
+    private readonly authValidationService: AuthValidationService,
   ) {}
 
+  /**
+   * Main guard activation method
+   *
+   * Execution flow:
+   * 1. Extract auth method preference from route metadata
+   * 2. Extract and validate authentication credentials (JWT or API key)
+   * 3. Validate user identity exists and is active
+   * 4. Check role-based access control if required by route
+   * 5. Check permission-based access control if required by route
+   * 6. Grant access if all checks pass
+   *
+   * @param context The execution context containing request/response
+   * @returns true if all security checks pass, throws AppHttpException otherwise
+   * @throws AppHttpException with descriptive localized error messages
+   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 
@@ -52,17 +64,21 @@ export class AuthGuard implements CanActivate {
     const useTokenValidation = authMetadata?.validateToken === true;
 
     if (useTokenValidation) {
-      const token = this.extractTokenFromHeader(request);
+      const token = this.authValidationService.extractTokenFromHeader(request);
       if (!token) {
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
+        throw new AppHttpException(
+          ErrorMessageEnum.MISSING_AUTHORIZATION_HEADER,
+        );
       }
-      identity = await this.validateToken(token);
+      identity = await this.authValidationService.validateToken(token);
     } else {
-      const apiKey = this.extractApiKey(request);
+      const apiKey = this.authValidationService.extractApiKey(request);
       if (!apiKey) {
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
+        throw new AppHttpException(
+          ErrorMessageEnum.MISSING_API_KEY_HEADER,
+        );
       }
-      identity = await this.validateApiKey(apiKey);
+      identity = await this.authValidationService.validateApiKey(apiKey);
     }
 
     request.user = identity;
@@ -79,13 +95,18 @@ export class AuthGuard implements CanActivate {
       authMetadata.allowInCompletedProfiles === false &&
       identity.dataCompleted === false
     ) {
-      throw new AppHttpException(ErrorMessageEnum.PROFILE_COMPLETION_REQUIRED);
+      throw new AppHttpException(
+        ErrorMessageEnum.PROFILE_COMPLETION_REQUIRED,
+      );
     }
 
     if (authMetadata.roles && authMetadata.roles.length > 0) {
-      const hasRole = await this.checkRoles(identity, authMetadata.roles);
+      const hasRole = await this.authValidationService.checkRoles(
+        identity,
+        authMetadata.roles,
+      );
       if (!hasRole) {
-        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+        throw new AppHttpException(ErrorMessageEnum.INSUFFICIENT_ROLE);
       }
     }
 
@@ -94,185 +115,18 @@ export class AuthGuard implements CanActivate {
       authMetadata.permissions.length > 0 &&
       identity.UserType !== UserType.ORGANIZATION
     ) {
-      const hasPermissions = await this.checkPermissions(
-        identity,
-        authMetadata.permissions,
-      );
+      const hasPermissions =
+        await this.authValidationService.checkPermissions(
+          identity,
+          authMetadata.permissions,
+        );
       if (!hasPermissions) {
-        throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
+        throw new AppHttpException(
+          ErrorMessageEnum.INSUFFICIENT_PERMISSIONS,
+        );
       }
     }
 
     return true;
-  }
-
-  private async validateToken(token: string): Promise<any> {
-    const payload = await this.jwtService.verifyAsync(token);
-    const tokenExists = await this.userTokenRepository.model.find({ token });
-    if (!tokenExists) {
-      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-    }
-    const identity = await this.identityRepository.model
-      .findById(payload.id)
-      .populate([
-        { path: 'organization' },
-        {
-          path: 'role',
-          populate: {
-            path: 'permissions',
-          },
-        },
-      ])
-      .select('-password -__v')
-      .exec();
-
-    if (!identity) {
-      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-    }
-
-    if (!identity.isVerified) {
-      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-    }
-
-    if (identity.status !== 'ACTIVE') {
-      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-    }
-
-    return identity;
-  }
-
-  private async validateApiKey(Key: string): Promise<any> {
-    const apiKey = await this.apiKeyRepository.model
-      .findOne({ key: Key })
-      .populate('organization')
-      .exec();
-    if (!apiKey) {
-      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-    }
-
-    switch (apiKey.tier) {
-      case SubscriptionTiers.FREE:
-        if (
-          apiKey.usageCount >=
-          TIER_LIMITS[SubscriptionTiers.FREE].requestsPerMonth
-        ) {
-          throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-        }
-
-        break;
-      case SubscriptionTiers.PRO:
-        if (
-          apiKey.usageCount >=
-          TIER_LIMITS[SubscriptionTiers.PRO].requestsPerMonth
-        ) {
-          throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-        }
-        break;
-
-      case SubscriptionTiers.ENTERPRISE:
-        if (
-          apiKey.usageCount >=
-          TIER_LIMITS[SubscriptionTiers.ENTERPRISE].requestsPerMonth
-        ) {
-          throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-        }
-        break;
-      default:
-        console.warn(`Unknown subscription tier: ${apiKey.tier}`);
-        throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-    }
-
-    if (this.isApiKeyExpired(apiKey.createdAt!)) {
-      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-    }
- 
-    apiKey.usageCount += 1;
-    await apiKey.save();
-
-    const identity = await this.identityRepository.model
-      .findById((apiKey.organization as Organization).identity.toString())
-      .populate([
-        { path: 'organization' },
-        {
-          path: 'role',
-          populate: { path: 'permissions' },
-        },
-      ])
-      .exec();
-
-    if (!identity) {
-      throw new AppHttpException(ErrorMessageEnum.UNAUTHORIZED);
-    }
-
-    if (identity.status !== 'ACTIVE') {
-      throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
-    }
-
-    return identity;
-  }
-
-  private isApiKeyExpired(createdAt: Date): boolean {
-    const now = new Date();
-    const expirationDate = new Date(createdAt);
-    expirationDate.setDate(expirationDate.getDate() + 30);
-    return now > expirationDate;
-  }
-
-  private extractTokenFromHeader(request: any): string | undefined {
-    const authHeader = request.headers.authorization;
-    if (!authHeader) {
-      return undefined;
-    }
-
-    const [type, token] = authHeader.split(' ') ?? [];
-
-    if (type !== 'Bearer') {
-      console.warn(`Invalid auth type: ${type}, expected Bearer`);
-      return undefined;
-    }
-
-    if (!token) {
-      console.warn('Token is missing from Authorization header');
-      return undefined;
-    }
-
-    return token;
-  }
-
-  private extractApiKey(request: any): string | undefined {
-    return request.headers['x-api-key'];
-  }
-
-  /**
-   * Check if user has any of the required roles
-   */
-  private async checkRoles(
-    identity: any,
-    requiredRoles: UserType[],
-  ): Promise<boolean> {
-    const identityType = identity.type;
-
-    return requiredRoles.includes(identityType);
-  }
-
-  private async checkPermissions(
-    identity: any,
-    requiredPermissions: Array<{ target: string; action: string }>,
-  ): Promise<boolean> {
-    if (!identity.role) {
-      return false;
-    }
-
-    const role = identity.role as Role;
-
-    const userPermissions = (role.permissions || []) as Permission[];
-
-    return requiredPermissions.every((required) => {
-      return userPermissions.some(
-        (userPerm) =>
-          userPerm.resource === required.target &&
-          userPerm.action === required.action,
-      );
-    });
   }
 }

@@ -38,6 +38,7 @@ import { ThrottlerConfigModule } from './modules/core/config/throttler.module';
     AppHelperModule,
     I18nModule.forRootAsync(I18nConfig),
   ],
+
   providers: [
     {
       provide: APP_FILTER,

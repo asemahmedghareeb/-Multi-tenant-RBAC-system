@@ -84,6 +84,7 @@ export class PermissionController {
       dto,
       identity,
     );
+    
     return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 }

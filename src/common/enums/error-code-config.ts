@@ -103,4 +103,28 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.API_KEY_LIMIT_REACHED_FREE]: 403,
   [ErrorMessageEnum.API_KEY_LIMIT_REACHED_PRO]: 403,
   [ErrorMessageEnum.API_KEY_LIMIT_REACHED_ENTERPRISE]: 403,
+
+  // Auth Guard: Token validation errors
+  [ErrorMessageEnum.MISSING_AUTHORIZATION_HEADER]: 401,
+  [ErrorMessageEnum.INVALID_BEARER_TOKEN_FORMAT]: 400,
+  [ErrorMessageEnum.INVALID_TOKEN]: 401,
+  [ErrorMessageEnum.TOKEN_NOT_FOUND_IN_SESSION]: 401,
+  [ErrorMessageEnum.TOKEN_VERIFICATION_FAILED]: 401,
+
+  // Auth Guard: API Key validation errors
+  [ErrorMessageEnum.MISSING_API_KEY_HEADER]: 401,
+  [ErrorMessageEnum.INVALID_API_KEY]: 401,
+  [ErrorMessageEnum.API_KEY_EXPIRED]: 401,
+  [ErrorMessageEnum.API_KEY_USAGE_LIMIT_EXCEEDED_FREE]: 429,
+  [ErrorMessageEnum.API_KEY_USAGE_LIMIT_EXCEEDED_PRO]: 429,
+  [ErrorMessageEnum.API_KEY_USAGE_LIMIT_EXCEEDED_ENTERPRISE]: 429,
+
+  // Auth Guard: User identity errors
+  [ErrorMessageEnum.USER_IDENTITY_NOT_FOUND]: 401,
+  [ErrorMessageEnum.USER_EMAIL_NOT_VERIFIED]: 401,
+  [ErrorMessageEnum.USER_ACCOUNT_INACTIVE]: 403,
+
+  // Auth Guard: Authorization errors
+  [ErrorMessageEnum.INSUFFICIENT_PERMISSIONS]: 403,
+  [ErrorMessageEnum.INSUFFICIENT_ROLE]: 403,
 };
