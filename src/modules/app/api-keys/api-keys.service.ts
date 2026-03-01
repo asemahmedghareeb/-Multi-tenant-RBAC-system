@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { ApiKeyDocument, ApiKey } from './entities/api-key.entity';
@@ -13,6 +13,7 @@ import {
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
+import { ReturnObject } from 'src/common/return-object/return-object';
 
 @Injectable()
 export class ApiKeysService {
@@ -22,6 +23,7 @@ export class ApiKeysService {
     private readonly organizationRepository: BaseRepository<OrganizationDocument>,
     @InjectRepository(ApiKey)
     private readonly apiKeyRepository: BaseRepository<ApiKeyDocument>,
+    private readonly returnObject: ReturnObject,
   ) {}
 
   @Transactional()
@@ -37,23 +39,25 @@ export class ApiKeysService {
     switch (organization.subscriptionTier) {
       case SubscriptionTiers.FREE:
         if (apiKeys.length >= TIER_LIMITS[SubscriptionTiers.FREE].maxKeys) {
-          throw new ForbiddenException(
-            `Free tier allows only ${TIER_LIMITS[SubscriptionTiers.FREE].maxKeys} API key`,
+          throw new AppHttpException(
+            ErrorMessageEnum.API_KEY_LIMIT_REACHED_FREE,
           );
         }
+        break;
       case SubscriptionTiers.PRO:
         if (apiKeys.length >= TIER_LIMITS[SubscriptionTiers.PRO].maxKeys) {
-          throw new ForbiddenException(
-            `Pro tier allows only ${TIER_LIMITS[SubscriptionTiers.PRO].maxKeys} API keys`,
+          throw new AppHttpException(
+            ErrorMessageEnum.API_KEY_LIMIT_REACHED_PRO,
           );
         }
+        break;
 
       case SubscriptionTiers.ENTERPRISE:
         if (
           apiKeys.length >= TIER_LIMITS[SubscriptionTiers.ENTERPRISE].maxKeys
         ) {
-          throw new ForbiddenException(
-            `Enterprise tier allows only ${TIER_LIMITS[SubscriptionTiers.ENTERPRISE].maxKeys} API keys`,
+          throw new AppHttpException(
+            ErrorMessageEnum.API_KEY_LIMIT_REACHED_ENTERPRISE,
           );
         }
         break;
@@ -68,12 +72,19 @@ export class ApiKeysService {
   }
 
   async findAll(PaginationDto: PaginationDto, identity: any) {
-    return this.apiKeyRepository.findPaginated(
+    const apiKeys = await this.apiKeyRepository.findPaginated(
       { organization: identity.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
     );
+    return {
+      items: apiKeys.items.map((apiKey) => {
+        return this.returnObject.apiKey(apiKey);
+      }),
+      pageInfo: apiKeys.pageInfo,
+    };
+  
   }
 
   findOne(id: string) {

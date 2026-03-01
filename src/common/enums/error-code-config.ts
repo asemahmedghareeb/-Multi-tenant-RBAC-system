@@ -21,6 +21,7 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.SERVICE_UNAVAILABLE]: 503,
   [ErrorMessageEnum.GATEWAY_TIMEOUT]: 504,
 
+
   // Uploader errors
   [ErrorMessageEnum.INVALID_FILE_UPLOAD]: 400,
   [ErrorMessageEnum.FILE_TOO_LARGE]: 400,
@@ -96,4 +97,10 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.BLOG_CATEGORY_DOES_NOT_EXIST]: 404,
   [ErrorMessageEnum.TAG_DOES_NOT_EXIST]: 404,
   [ErrorMessageEnum.CANNOT_DELETE_LAST_API_KEY]: 400,
+  [ErrorMessageEnum.USER_ALREADY_EXIST]: 409,
+
+  // API Key tier limits
+  [ErrorMessageEnum.API_KEY_LIMIT_REACHED_FREE]: 403,
+  [ErrorMessageEnum.API_KEY_LIMIT_REACHED_PRO]: 403,
+  [ErrorMessageEnum.API_KEY_LIMIT_REACHED_ENTERPRISE]: 403,
 };

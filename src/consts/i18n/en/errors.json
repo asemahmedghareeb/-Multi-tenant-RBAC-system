@@ -70,5 +70,9 @@
   "PASSWORD_RESET_REQUIRED": "The user is required to change his password",
   "PROFILE_COMPLETION_REQUIRED": "this user is required to complete his profile",
   "EMAIL_MISMATCH" : "Email mismatch",
-  "CANNOT_DELETE_LAST_API_KEY": "Cannot delete the last API key of the organization. At least one API key must be maintained."
+  "CANNOT_DELETE_LAST_API_KEY": "Cannot delete the last API key of the organization. At least one API key must be maintained.",
+  "USER_ALREADY_EXIST": "User already exist",
+  "API_KEY_LIMIT_REACHED_FREE": "Free tier allows only 1 API key",
+  "API_KEY_LIMIT_REACHED_PRO": "Pro tier API key limit reached",
+  "API_KEY_LIMIT_REACHED_ENTERPRISE": "Enterprise tier API key limit reached"
 }

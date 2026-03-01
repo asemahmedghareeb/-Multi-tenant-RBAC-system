@@ -1,9 +1,7 @@
 import {
   IsEmail,
-  IsMongoId,
   IsNotEmpty,
   IsString,
-  IsStrongPassword,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -15,8 +13,4 @@ export class CreateUserDto {
   @IsNotEmpty()
   email: string;
 
-  @IsString()
-  @IsNotEmpty()
-  //   @IsStrongPassword()
-  password: string;
 }

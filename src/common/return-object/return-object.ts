@@ -7,14 +7,15 @@ export class ReturnObject {
   /**
    * Returns a clean user object with sensitive fields removed
    */
-  user(user: any, identity: any) {
+  user(user: any, identity?: any) {
     return {
       id: user._id,
       username: user.username,
-      email: identity.email,
-      isVerified: identity.isVerified,
-      status: identity.status,
-      dataCompleted: identity.dataCompleted,
+      email: user.email,
+      // email: identity.email,
+      // isVerified: identity.isVerified,
+      // status: identity.status,
+      // dataCompleted: identity.dataCompleted,
       createdAt: user.createdAt,
     };
   }
@@ -156,7 +157,8 @@ export class ReturnObject {
       usageCount: apiKey.usageCount,
       tier: apiKey.tier,
       createdAt: apiKey.createdAt,
-      message: 'Please save this API key securely. You will not be able to see it again.',
+      message:
+        'Please save this API key securely. You will not be able to see it again.',
     };
   }
 

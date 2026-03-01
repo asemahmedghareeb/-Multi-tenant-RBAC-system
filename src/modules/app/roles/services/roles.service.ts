@@ -14,6 +14,7 @@ import {
   IdentityDocument,
 } from '../../auth-base/identities/entities/identity.entity';
 import { Permission, PermissionDocument } from '../entities/permission.entity';
+import { ReturnObject } from 'src/common/return-object/return-object';
 
 @Injectable()
 export class RolesService {
@@ -26,6 +27,7 @@ export class RolesService {
     private readonly identityRepository: BaseRepository<IdentityDocument>,
     @InjectRepository(Permission)
     private readonly permissionRepository: BaseRepository<PermissionDocument>,
+    private readonly returnObject: ReturnObject,
   ) {}
 
   async create(createRoleDto: AddRoleDto, identity: any) {
@@ -53,12 +55,18 @@ export class RolesService {
   }
 
   async findAll(paginationDto: PaginationDto, identity: any) {
-    return this.roleRepository.findPaginated(
+    const roles = await this.roleRepository.findPaginated(
       { organization: identity.organization._id },
       { 'name.en': 1, 'name.ar': 1 },
       paginationDto.page,
       paginationDto.limit,
     );
+    return {
+      items: roles.items.map((role) => {
+        return this.returnObject.role(role);
+      }),
+      pageInfo: roles.pageInfo,
+    }
   }
 
   async delete(id: string, identity: any) {
@@ -123,8 +131,8 @@ export class RolesService {
       ErrorMessageEnum.NOT_FOUND,
     );
 
-    await this.identityRepository.model.findOneAndUpdate(
-      { _id: user.identity },
+    await this.userRepository.model.findOneAndUpdate(
+      { _id: user._id },
       { role: role._id },
     );
 
@@ -140,8 +148,8 @@ export class RolesService {
       ErrorMessageEnum.NOT_FOUND,
     );
 
-    await this.identityRepository.model.findOneAndUpdate(
-      { _id: user.identity },
+    await this.userRepository.model.findOneAndUpdate(
+      { _id: user._id },
       { role: null },
     );
 

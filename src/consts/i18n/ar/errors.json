@@ -70,5 +70,9 @@
   "PASSWORD_RESET_REQUIRED": "يجب على المستخدم إعادة تعيين كلمة المرور الخاصة به",
   "PROFILE_COMPLETION_REQUIRED": "هذا المستخدم ملزم بإكمال ملفه الشخصي",
   "EMAIL_MISMATCH": "البريد الالكتروني غير متطابق",
-  "CANNOT_DELETE_LAST_API_KEY": "لا يمكن حذف مفتاح API الأخير في المؤسسة. يجب الحفاظ على مفتاح API واحد على الأقل."
+  "CANNOT_DELETE_LAST_API_KEY": "لا يمكن حذف مفتاح API الأخير في المؤسسة. يجب الحفاظ على مفتاح API واحد على الأقل.",
+  "USER_ALREADY_EXIST": "المستخدم موجود بالفعل",
+  "API_KEY_LIMIT_REACHED_FREE": "الباقة المجانية تسمح بمفتاح API واحد فقط",
+  "API_KEY_LIMIT_REACHED_PRO": "تم بلوغ الحد الأقصى لمفاتيح API في باقة Pro",
+  "API_KEY_LIMIT_REACHED_ENTERPRISE": "تم بلوغ الحد الأقصى لمفاتيح API في باقة Enterprise"
 }

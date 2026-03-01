@@ -26,55 +26,49 @@ export class UsersService {
 
   @Transactional()
   async create(createUserDto: CreateUserDto, currentUser: any) {
-    const { email, password, username } = createUserDto;
+    const { email, username } = createUserDto;
 
     const organization = currentUser.organization;
 
-    await this.identityRepository.findOneAndFail({ email });
+    await this.userRepository.findOneAndFail(
+      {
+        email,
+        organization: organization._id,
+      },
+      ErrorMessageEnum.USER_ALREADY_EXIST,
+    );
 
-    const identity = await this.identityRepository.createOne({
-      email,
-      password,
-      isVerified: true,
-      type: UserType.USER,
-    });
-
-    return await this.userRepository.createOne({
+    const user = await this.userRepository.createOne({
       username,
-      identity: identity,
-      organization,
+      email,
+      organization: organization._id,
     });
+    return this.returnObject.user(user);
   }
 
   async find(PaginationDto: PaginationDto, currentUser: any) {
-    return this.userRepository.findPaginated(
+    const users = await this.userRepository.findPaginated(
       { organization: currentUser.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
-      {
-        populate: {
-          path: 'identity',
-          select: '-password -__v',
-        },
-        lean: true,
-      },
     );
+    return {
+      items: users.items.map((user) => {
+        return this.returnObject.user(user);
+      }),
+      pageInfo: users.pageInfo,
+    };
+  
   }
 
   async findOne(id: string, identity: any) {
     const user = await this.userRepository.findOneOrFail(
       { _id: id, organization: identity.organization._id },
       ErrorMessageEnum.NOT_FOUND,
-      {
-        populate: {
-          path: 'identity',
-        },
-        lean: true,
-      },
     );
 
-    return this.returnObject.user(user, user.identity);
+    return this.returnObject.user(user);
   }
 
   @Transactional()
@@ -84,7 +78,7 @@ export class UsersService {
       ErrorMessageEnum.FORBIDDEN,
     );
 
-    await this.identityRepository.deleteOne({ _id: user.identity });
+    // await this.identityRepository.deleteOne({ _id: user.identity });
     await this.userRepository.deleteOne({ _id: id });
     return true;
   }
@@ -94,21 +88,10 @@ export class UsersService {
     const user = await this.userRepository.findOneOrFail(
       { _id: id, organization: identity.organization._id },
       ErrorMessageEnum.NOT_FOUND,
-      {
-        populate: {
-          path: 'identity',
-        },
-      },
     );
 
-    const status = (user.identity as Identity).status;
-    if (status === IdentityStatus.BLOCKED) {
-      (user.identity as Identity).status = IdentityStatus.ACTIVE;
-    } else {
-      (user.identity as Identity).status = IdentityStatus.BLOCKED;
-    }
-
-    await (user.identity as Identity).save();
+    user.isBlocked = !user.isBlocked;
+    await user.save();
 
     return true;
   }

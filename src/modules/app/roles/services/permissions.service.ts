@@ -10,6 +10,7 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { IdentityStatus } from '../../auth-base/identities/enums/identity-status.enum';
 import { User, UserDocument } from '../../users/entities/user.entity';
+import { ReturnObject } from 'src/common/return-object/return-object';
 
 @Injectable()
 export class PermissionsService implements OnModuleInit {
@@ -20,6 +21,7 @@ export class PermissionsService implements OnModuleInit {
     private readonly permissionRepository: BaseRepository<PermissionDocument>,
     @InjectRepository(User)
     private readonly userRepository: BaseRepository<UserDocument>,
+    private readonly returnObject: ReturnObject,
   ) {}
 
   async onModuleInit() {
@@ -129,12 +131,18 @@ export class PermissionsService implements OnModuleInit {
   }
 
   async findAll(PaginationDto: PaginationDto, identity: any) {
-    return this.permissionRepository.findPaginated(
+    const permissions = await this.permissionRepository.findPaginated(
       { organization: identity.organization._id },
       { createdAt: -1 },
       PaginationDto.page,
       PaginationDto.limit,
     );
+    return {
+      items: permissions.items.map((permission) => {
+        return this.returnObject.permission(permission);
+      }),
+      pageInfo: permissions.pageInfo,
+    };
   }
 
   async findOne(id: string, identity: any) {
