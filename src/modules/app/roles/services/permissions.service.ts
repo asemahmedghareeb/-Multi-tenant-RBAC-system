@@ -51,8 +51,6 @@ export class PermissionsService implements OnModuleInit {
       }
     }
 
-    // Get all existing permissions from database
-    // const existingPermissions = await this.permissionModel.find().exec();
     const existingPermissions = await this.permissionRepository.model
       .find()
       .exec();

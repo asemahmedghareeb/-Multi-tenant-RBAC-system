@@ -28,3 +28,10 @@ export class ApiKey extends AppBaseEntity {
 export type ApiKeyDocument = ApiKey;
 
 export const ApiKeySchema = SchemaFactory.createForClass(ApiKey);
+
+// Looked up on every API key request in the auth guard
+// key field already has a unique index from the Prop definition
+// List all keys for an organization (api-keys service)
+ApiKeySchema.index({ organization: 1 });
+// Expiry check uses createdAt; compound helps filter expired+org keys
+ApiKeySchema.index({ organization: 1, createdAt: 1 });

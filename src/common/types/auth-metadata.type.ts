@@ -9,4 +9,5 @@ export interface AuthMetadata {
   roles?: UserType[];
   permissions?: PermissionRequirement[];
   validateToken?: boolean;
+  allowInCompletedProfiles?: boolean;
 }

@@ -47,7 +47,7 @@ export class Identity extends AppBaseEntity {
   isSuperAdmin?: boolean;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: Role.name })
-  role?: string | Role;
+  role?:  Role;
 }
 
 export interface IdentityMethods {
@@ -57,6 +57,14 @@ export interface IdentityMethods {
 export type IdentityDocument = Identity & IdentityMethods;
 
 export const IdentitySchema = SchemaFactory.createForClass(Identity);
+
+// Queried on every login and token validation
+IdentitySchema.index({ email: 1 }, { unique: true });
+// Filtered on every request in the auth guard
+IdentitySchema.index({ status: 1 });
+IdentitySchema.index({ isVerified: 1 });
+IdentitySchema.index({ type: 1 });
+IdentitySchema.index({ isSuperAdmin: 1 });
 
 IdentitySchema.virtual('organization', {
   ref: 'Organization',

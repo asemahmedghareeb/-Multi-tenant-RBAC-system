@@ -41,7 +41,12 @@ export class RolesController {
     @CurrentUser() identity: any,
   ) {
     const result = await this.rolesService.findAll(paginationDto, identity);
-    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result.items, result.pageInfo);
+    return ApiUtil.formatResponse(
+      200,
+      ResponseMessageEnum.SUCCESS,
+      result.items,
+      result.pageInfo,
+    );
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })

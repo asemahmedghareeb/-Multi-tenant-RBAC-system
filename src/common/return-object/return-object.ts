@@ -1,4 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { ApiKey } from 'src/modules/app/api-keys/entities/api-key.entity';
+import { Identity } from 'src/modules/app/auth-base/identities/entities/identity.entity';
+import { Organization } from 'src/modules/app/organization/entities/organization.entity';
+import { Permission } from 'src/modules/app/roles/entities/permission.entity';
+import { Role } from 'src/modules/app/roles/entities/role.entity';
+import { User } from 'src/modules/app/users/entities/user.entity';
 
 @Injectable()
 export class ReturnObject {
@@ -7,15 +13,11 @@ export class ReturnObject {
   /**
    * Returns a clean user object with sensitive fields removed
    */
-  user = (user: any, identity?: any) => {
+  user = (user: User) => {
     return {
       id: user._id,
       username: user.username,
       email: user.email,
-      // email: identity.email,
-      // isVerified: identity.isVerified,
-      // status: identity.status,
-      // dataCompleted: identity.dataCompleted,
       createdAt: user.createdAt,
     };
   };
@@ -23,14 +25,11 @@ export class ReturnObject {
   /**
    * Returns a clean user with organization info
    */
-  userWithOrganization = (user: any, identity: any, organization: any) => {
+  userWithOrganization = (user: User, organization: any) => {
     return {
       id: user._id,
       username: user.username,
-      email: identity.email,
-      isVerified: identity.isVerified,
-      status: identity.status,
-      dataCompleted: identity.dataCompleted,
+      email: user.email,
       organization: this.organization(organization),
       createdAt: user.createdAt,
     };
@@ -39,7 +38,7 @@ export class ReturnObject {
   /**
    * Returns identity object with safe fields
    */
-  identity = (identity: any) => {
+  identity = (identity: Identity) => {
     return {
       id: identity._id,
       email: identity.email,
@@ -54,7 +53,7 @@ export class ReturnObject {
   /**
    * Returns full identity with role and user details
    */
-  identityWithRole = (identity: any) => {
+  identityWithRole = (identity: Identity) => {
     return {
       id: identity._id,
       email: identity.email,
@@ -70,7 +69,7 @@ export class ReturnObject {
   /**
    * Returns role object with permissions
    */
-  role = (role: any) => {
+  role = (role: Role) => {
     return {
       id: role._id,
       name: role.name,
@@ -85,7 +84,7 @@ export class ReturnObject {
   /**
    * Returns role without populated permissions to reduce payload
    */
-   roleBasic = (role: any) => {
+  roleBasic = (role: Role) => {
     return {
       id: role._id,
       name: role.name,
@@ -97,7 +96,7 @@ export class ReturnObject {
   /**
    * Returns permission object
    */
-  permission = (permission: any) => {
+  permission = (permission: Permission) => {
     return {
       id: permission._id,
       resource: permission.resource,
@@ -111,7 +110,7 @@ export class ReturnObject {
   /**
    * Returns organization object
    */
-  organization = (organization: any) => {
+  organization = (organization: Organization) => {
     return {
       id: organization._id,
       name: organization.name,
@@ -123,7 +122,10 @@ export class ReturnObject {
   /**
    * Returns organization with API keys count
    */
-  organizationWithStats = (organization: any, apiKeyCount?: number) => {
+  organizationWithStats = (
+    organization: Organization,
+    apiKeyCount?: number,
+  ) => {
     return {
       id: organization._id,
       name: organization.name,
@@ -136,7 +138,7 @@ export class ReturnObject {
   /**
    * Returns API key object (without exposing full key)
    */
-  apiKey = (apiKey: any, includeFullKey: boolean = false) => {
+  apiKey = (apiKey: ApiKey, includeFullKey: boolean = false) => {
     const response: any = {
       id: apiKey._id,
       key: includeFullKey ? apiKey.key : this.maskApiKey(apiKey.key),
@@ -150,7 +152,7 @@ export class ReturnObject {
   /**
    * Returns full API key details (should only be returned once after creation)
    */
-  apiKeyFull = (apiKey: any) => {
+  apiKeyFull = (apiKey: ApiKey) => {
     return {
       id: apiKey._id,
       key: apiKey.key,
@@ -165,7 +167,7 @@ export class ReturnObject {
   /**
    * Returns API key list (masked)
    */
-  apiKeyList = (apiKeys: any[]) => {
+  apiKeyList = (apiKeys: ApiKey[]) => {
     return apiKeys.map((apiKey) => this.apiKey(apiKey, false));
   };
 

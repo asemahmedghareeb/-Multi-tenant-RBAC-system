@@ -75,6 +75,13 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
+    if (
+      authMetadata.allowInCompletedProfiles === false &&
+      identity.dataCompleted === false
+    ) {
+      throw new AppHttpException(ErrorMessageEnum.PROFILE_COMPLETION_REQUIRED);
+    }
+
     if (authMetadata.roles && authMetadata.roles.length > 0) {
       const hasRole = await this.checkRoles(identity, authMetadata.roles);
       if (!hasRole) {
