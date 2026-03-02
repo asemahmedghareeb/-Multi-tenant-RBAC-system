@@ -13,7 +13,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { AuthHelper } from './helpers/auth.helper';
 import { AuthValidationService } from './helpers/auth-validation.service';
 import { RepositoryModule } from 'src/common/repositories/repository.module';
-import { RolesModule } from '../../roles/roles.module';
+import { RolesModule } from '../roles/roles.module';
 
 @Global()
 @Module({

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
 import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
-import { Organization } from '../../organization/entities/organization.entity';
+import { Organization } from '../../../organization/entities/organization.entity';
 
 @GeneratePermissions()
 @Schema(SCHEMA_OPTIONS)

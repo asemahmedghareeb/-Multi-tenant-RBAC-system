@@ -19,9 +19,9 @@ import {
 import { Organization } from '../../../organization/entities/organization.entity';
 import { SubscriptionTiers } from '../../../api-keys/enums/subscription-tiers.enum';
 import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
-import { Permission } from '../../../roles/entities/permission.entity';
+import { Permission } from '../../roles/entities/permission.entity';
 import { UserType } from '../enums/user-type.enum';
-import { RolePermissionService } from '../../../roles/services/role-permission.service';
+import { RolePermissionService } from '../../roles/services/role-permission.service';
 
 @Injectable()
 export class AuthValidationService {

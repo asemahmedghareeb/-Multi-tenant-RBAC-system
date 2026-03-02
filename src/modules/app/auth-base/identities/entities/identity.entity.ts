@@ -8,7 +8,7 @@ import {
   SCHEMA_OPTIONS,
 } from 'src/common/entities/app-base.entity';
 import { UserType } from '../../auth/enums/user-type.enum';
-import { Role } from 'src/modules/app/roles/entities/role.entity';
+import { Role } from 'src/modules/app/auth-base/roles/entities/role.entity';
 
 @GeneratePermissions()
 @Schema(SCHEMA_OPTIONS)

@@ -4,7 +4,7 @@ import { AuthModule } from './modules/app/auth-base/auth/auth.module';
 import { IdentitiesModule } from './modules/app/auth-base/identities/identities.module';
 import { UserTokensModule } from './modules/app/auth-base/user-tokens/user-tokens.module';
 import { OrganizationModule } from './modules/app/organization/organization.module';
-import { RolesModule } from './modules/app/roles/roles.module';
+import { RolesModule } from './modules/app/auth-base/roles/roles.module';
 import { UsersModule } from './modules/app/users/users.module';
 import { configModule } from './modules/core/config/config.module';
 import { databaseRootModule } from './modules/core/database/database.module';

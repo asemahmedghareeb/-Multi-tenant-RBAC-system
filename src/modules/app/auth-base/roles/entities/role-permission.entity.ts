@@ -7,7 +7,7 @@ import {
 } from 'src/common/entities/app-base.entity';
 import { Role } from './role.entity';
 import { Permission } from './permission.entity';
-import { Identity } from '../../auth-base/identities/entities/identity.entity';
+import { Identity } from '../../identities/entities/identity.entity';
 
 
 @GeneratePermissions()

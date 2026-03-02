@@ -3,7 +3,7 @@ import { Schema as MongooseSchema } from 'mongoose';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
 import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
 import { Organization } from '../../organization/entities/organization.entity';
-import { Role } from '../../roles/entities/role.entity';
+import { Role } from '../../auth-base/roles/entities/role.entity';
 
 @GeneratePermissions()
 @Schema(SCHEMA_OPTIONS)

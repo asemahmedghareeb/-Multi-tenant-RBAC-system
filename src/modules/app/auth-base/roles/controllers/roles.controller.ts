@@ -1,4 +1,4 @@
-import { CurrentUser } from './../../auth-base/auth/decorators/current-user.decorator';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import {
   Body,
   Controller,
@@ -11,8 +11,8 @@ import {
 import { RolesService } from '../services/roles.service';
 import { RolePermissionService } from '../services/role-permission.service';
 
-import { Auth } from '../../auth-base/auth/decorators/auth.decorator';
-import { UserType } from '../../auth-base/auth/enums/user-type.enum';
+import { Auth } from '../../auth/decorators/auth.decorator';
+import { UserType } from '../../auth/enums/user-type.enum';
 import { AddRoleDto } from '../dto/add-role.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ParseObjectIdPipe } from 'src/common/pipes/parse-object-id.pipe';

@@ -10,17 +10,17 @@ import {
   Organization,
   OrganizationDocument,
 } from '../../../app/organization/entities/organization.entity';
-import { Role, RoleDocument } from '../../../app/roles/entities/role.entity';
+import { Role, RoleDocument } from '../../../app/auth-base/roles/entities/role.entity';
 import {
   Permission,
   PermissionDocument,
-} from '../../../app/roles/entities/permission.entity';
+} from '../../../app/auth-base/roles/entities/permission.entity';
 import { IdentityStatus } from '../../../app/auth-base/identities/enums/identity-status.enum';
 import { UserType } from '../../../app/auth-base/auth/enums/user-type.enum';
 import { SubscriptionTiers } from '../../../app/api-keys/enums/subscription-tiers.enum';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
-import { RolePermissionService } from '../../../app/roles/services/role-permission.service';
-import { PermissionsService } from '../../../app/roles/services/permissions.service';
+import { RolePermissionService } from '../../../app/auth-base/roles/services/role-permission.service';
+import { PermissionsService } from '../../../app/auth-base/roles/services/permissions.service';
 
 @Injectable()
 export class SeedingService implements OnModuleInit {

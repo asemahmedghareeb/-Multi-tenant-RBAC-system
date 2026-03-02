@@ -1,4 +1,4 @@
-import { PaginationDto } from './../../../../common/dtos/pagination.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { Injectable } from '@nestjs/common';
 import { Role, RoleDocument } from '../entities/role.entity';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
@@ -8,11 +8,11 @@ import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { AddOrRemovePermissionsDto } from '../dto/add-or-remove-permissions.dto';
 import { AssignRoleToUserDto } from '../dto/assign-role-to-user.dto';
-import { User, UserDocument } from '../../users/entities/user.entity';
+import { User, UserDocument } from '../../../users/entities/user.entity';
 import {
   Identity,
   IdentityDocument,
-} from '../../auth-base/identities/entities/identity.entity';
+} from '../../identities/entities/identity.entity';
 import { Permission, PermissionDocument } from '../entities/permission.entity';
 import { ReturnObject } from 'src/common/return-object/return-object';
 import { RolePermissionService } from './role-permission.service';

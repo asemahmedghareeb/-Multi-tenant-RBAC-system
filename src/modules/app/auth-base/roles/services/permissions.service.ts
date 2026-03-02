@@ -8,7 +8,7 @@ import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
-import { User, UserDocument } from '../../users/entities/user.entity';
+import { User, UserDocument } from '../../../users/entities/user.entity';
 import { ReturnObject } from 'src/common/return-object/return-object';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { RolePermissionService } from './role-permission.service';
@@ -58,7 +58,7 @@ export class PermissionsService {
         !validPermissionKeys.has(`${p.resource}:${p.action}`) &&
         !(p as any).organization,
     );
- 
+
     if (permissionsToDelete.length > 0) {
       const deleteIds = permissionsToDelete.map((p) => (p as any)._id);
       await this.permissionRepository.deleteMany({ _id: { $in: deleteIds } });
@@ -92,7 +92,6 @@ export class PermissionsService {
         `Permissions created: ${result.upsertedCount}, already existed: ${permissionsToCreate.length - result.upsertedCount}`,
       );
     }
-
   }
 
   @Transactional()

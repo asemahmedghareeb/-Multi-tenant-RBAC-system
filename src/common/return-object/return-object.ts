@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ApiKey } from 'src/modules/app/api-keys/entities/api-key.entity';
 import { Identity } from 'src/modules/app/auth-base/identities/entities/identity.entity';
 import { Organization } from 'src/modules/app/organization/entities/organization.entity';
-import { Permission } from 'src/modules/app/roles/entities/permission.entity';
-import { Role } from 'src/modules/app/roles/entities/role.entity';
+import { Permission } from 'src/modules/app/auth-base/roles/entities/permission.entity';
+import { Role } from 'src/modules/app/auth-base/roles/entities/role.entity';
 import { User } from 'src/modules/app/users/entities/user.entity';
 
 @Injectable()
