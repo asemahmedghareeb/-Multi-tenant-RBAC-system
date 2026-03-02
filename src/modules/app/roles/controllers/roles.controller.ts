@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { RolesService } from '../services/roles.service';
+import { RolePermissionService } from '../services/role-permission.service';
 
 import { Auth } from '../../auth-base/auth/decorators/auth.decorator';
 import { UserType } from '../../auth-base/auth/enums/user-type.enum';
@@ -22,7 +23,10 @@ import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
 
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly rolesService: RolesService) {}
+  constructor(
+    private readonly rolesService: RolesService,
+    private readonly rolePermissionService: RolePermissionService,
+  ) {}
 
   @Auth({ roles: [UserType.ORGANIZATION] })
   @Post()
@@ -57,6 +61,36 @@ export class RolesController {
   ) {
     const result = await this.rolesService.delete(id, identity);
     return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
+  }
+
+  @Auth({ roles: [UserType.ORGANIZATION] })
+  @Get(':id/permissions')
+  async getRolePermissions(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @CurrentUser() identity: any,
+  ) {
+    // Validate that the role belongs to the user's organization
+    await this.rolesService.findOne(id, identity);
+
+    const rolePermissions = await this.rolePermissionService.getPermissionsForRole(id);
+    const permissions = rolePermissions.map((rp: any) => rp.permission);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, permissions);
+  }
+
+  @Auth({ roles: [UserType.ORGANIZATION] })
+  @Get(':id/permissions/:permissionId')
+  async checkRolePermission(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Param('permissionId', ParseObjectIdPipe) permissionId: string,
+    @CurrentUser() identity: any,
+  ) {
+    // Validate that the role belongs to the user's organization
+    await this.rolesService.findOne(id, identity);
+
+    const hasPermission = await this.rolePermissionService.hasPermission(id, permissionId);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, {
+      hasPermission,
+    });
   }
 
   @Auth({ roles: [UserType.ORGANIZATION] })

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
@@ -22,6 +22,7 @@ import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
 import { Role } from '../../../roles/entities/role.entity';
 import { Permission } from '../../../roles/entities/permission.entity';
 import { UserType } from '../enums/user-type.enum';
+import { RolePermissionService } from '../../../roles/services/role-permission.service';
 
 @Injectable()
 export class AuthValidationService {
@@ -33,6 +34,8 @@ export class AuthValidationService {
     private readonly apiKeyRepository: BaseRepository<ApiKeyDocument>,
     @InjectRepository(UserToken)
     private readonly userTokenRepository: BaseRepository<UserTokenDocument>,
+    @Inject(RolePermissionService)
+    private readonly rolePermissionService?: RolePermissionService,
   ) {}
 
   extractTokenFromHeader(request: any): string | undefined {
@@ -71,6 +74,17 @@ export class AuthValidationService {
     return apiKey;
   }
 
+  extractRefreshToken(request: any): string | undefined {
+    const refreshToken = request.headers['x-refresh-token'] || request.body?.refreshToken;
+    if (!refreshToken) {
+      console.warn(
+        '[Auth Validation] Refresh token is missing from x-refresh-token header or refreshToken body parameter',
+      );
+      return undefined;
+    }
+    return refreshToken;
+  }
+
   async validateToken(token: string): Promise<any> {
     let payload: any;
     try {
@@ -86,17 +100,12 @@ export class AuthValidationService {
     if (!tokenExists) {
       throw new AppHttpException(ErrorMessageEnum.TOKEN_NOT_FOUND_IN_SESSION);
     }
-
+ 
     const identity = await this.identityRepository.model
       .findById(payload.id)
       .populate([
         { path: 'organization' },
-        {
-          path: 'role',
-          populate: {
-            path: 'permissions',
-          },
-        },
+        { path: 'role' },
       ])
       .select('-password -__v')
       .exec();
@@ -111,6 +120,75 @@ export class AuthValidationService {
 
     if (identity.status !== 'ACTIVE') {
       throw new AppHttpException(ErrorMessageEnum.USER_ACCOUNT_INACTIVE);
+    }
+
+    // Fetch permissions from RolePermission table and attach to identity
+    if (identity.role && this.rolePermissionService) {
+      const rolePermissions = await this.rolePermissionService.getPermissionsForRole(
+        (identity.role as any)._id.toString(),
+      );
+      // Attach permissions to identity for auth guard to check
+      (identity as any).permissions = rolePermissions.map((rp: any) => rp.permission);
+    } else {
+      (identity as any).permissions = [];
+    }
+
+    return identity;
+  }
+
+  /**
+   * Validate refresh token and return user identity
+   * Verifies the refresh token is valid and exists in the session storage
+   */
+  async validateRefreshToken(refreshToken: string): Promise<any> {
+    let payload: any;
+    try {
+      payload = await this.jwtService.verifyAsync(refreshToken);
+    } catch (error) {
+      console.error('[Auth Validation] Refresh token verification failed:', error);
+      throw new AppHttpException(ErrorMessageEnum.INVALID_OR_EXPIRED_REFRESH_TOKEN);
+    }
+
+    // Check if refresh token exists in the database
+    const tokenRecord = await this.userTokenRepository.model.findOne({
+      refreshToken,
+    });
+    
+    if (!tokenRecord) {
+      throw new AppHttpException(ErrorMessageEnum.REFRESH_TOKEN_NOT_FOUND);
+    }
+
+    // Fetch the identity with all necessary information
+    const identity = await this.identityRepository.model
+      .findById(payload.id)
+      .populate([
+        { path: 'organization' },
+        { path: 'role' },
+      ])
+      .select('-password -__v')
+      .exec();
+
+    if (!identity) {
+      throw new AppHttpException(ErrorMessageEnum.USER_IDENTITY_NOT_FOUND);
+    }
+
+    if (!identity.isVerified) {
+      throw new AppHttpException(ErrorMessageEnum.USER_EMAIL_NOT_VERIFIED);
+    }
+
+    if (identity.status !== 'ACTIVE') {
+      throw new AppHttpException(ErrorMessageEnum.USER_ACCOUNT_INACTIVE);
+    }
+
+    // Fetch permissions from RolePermission table and attach to identity
+    if (identity.role && this.rolePermissionService) {
+      const rolePermissions = await this.rolePermissionService.getPermissionsForRole(
+        (identity.role as any)._id.toString(),
+      );
+      // Attach permissions to identity for auth guard to check
+      (identity as any).permissions = rolePermissions.map((rp: any) => rp.permission);
+    } else {
+      (identity as any).permissions = [];
     }
 
     return identity;
@@ -142,10 +220,7 @@ export class AuthValidationService {
       .findById((apiKey.organization as Organization).identity.toString())
       .populate([
         { path: 'organization' },
-        {
-          path: 'role',
-          populate: { path: 'permissions' },
-        },
+        { path: 'role' },
       ])
       .exec();
 
@@ -155,6 +230,17 @@ export class AuthValidationService {
 
     if (identity.status !== 'ACTIVE') {
       throw new AppHttpException(ErrorMessageEnum.USER_ACCOUNT_INACTIVE);
+    }
+
+    // Fetch permissions from RolePermission table and attach to identity
+    if (identity.role && this.rolePermissionService) {
+      const rolePermissions = await this.rolePermissionService.getPermissionsForRole(
+        (identity.role as any)._id.toString(),
+      );
+      // Attach permissions to identity for auth guard to check
+      (identity as any).permissions = rolePermissions.map((rp: any) => rp.permission);
+    } else {
+      (identity as any).permissions = [];
     }
 
     return identity;
@@ -232,8 +318,8 @@ export class AuthValidationService {
       return false;
     }
 
-    const role = identity.role as Role;
-    const userPermissions = (role.permissions || []) as Permission[];
+    // Permissions are fetched and attached to identity from RolePermission table
+    const userPermissions = (identity.permissions || []) as Permission[];
 
     const hasAllPermissions = requiredPermissions.every((required) => {
       return userPermissions.some(

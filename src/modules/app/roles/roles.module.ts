@@ -10,6 +10,8 @@ import { PermissionController } from './controllers/permission.controller';
 import { usersDbModule } from '../users/db/user.db.module';
 import { identitiesDbModule } from '../auth-base/identities/db/identities.db.module';
 import { ReturnObject } from 'src/common/return-object/return-object';
+import { rolePermissionDbModule } from './db/role-permission.db.module';
+import { RolePermissionService } from './services/role-permission.service';
 
 @Module({
   imports: [
@@ -19,10 +21,11 @@ import { ReturnObject } from 'src/common/return-object/return-object';
       rolesDbModule,
       usersDbModule,
       identitiesDbModule,
+      rolePermissionDbModule,
     ]),
   ],
   controllers: [RolesController, PermissionController],
-  providers: [RolesService, PermissionsService, ReturnObject],
-  exports: [RolesService, PermissionsService],
+  providers: [RolesService, PermissionsService, RolePermissionService, ReturnObject],
+  exports: [RolesService, PermissionsService, RolePermissionService],
 })
 export class RolesModule {}

@@ -7,28 +7,7 @@ import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
 import { AuthValidationService } from '../helpers/auth-validation.service';
 
-/**
- * AuthGuard - Comprehensive authentication and authorization guard
- *
- * This guard provides multi-layer security validation:
- * 1. **Authentication**: Validates user identity via JWT token or API key
- * 2. **Authorization**: Enforces role-based (RBAC) and permission-based (PBAC) access control
- * 3. **Account Validation**: Checks user verification status and account status
- * 4. **Rate Limiting**: Enforces API key usage limits based on subscription tier
- * 5. **Token Session Validation**: Ensures tokens exist in the session store
- *
- * Error Handling:
- * - Provides descriptive, localized error messages for all failure scenarios
- * - Logs detailed warnings for debugging and monitoring
- * - Returns appropriate HTTP status codes based on error type
- *
- * Supported Authentication Methods:
- * - Bearer JWT tokens: Authorization header with format "Bearer <token>"
- * - API Keys: x-api-key header for service-to-service authentication
- *
- * Dependencies:
- * - AuthValidationService: Handles all authentication/authorization logic
- */
+
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
@@ -36,21 +15,6 @@ export class AuthGuard implements CanActivate {
     private readonly authValidationService: AuthValidationService,
   ) {}
 
-  /**
-   * Main guard activation method
-   *
-   * Execution flow:
-   * 1. Extract auth method preference from route metadata
-   * 2. Extract and validate authentication credentials (JWT or API key)
-   * 3. Validate user identity exists and is active
-   * 4. Check role-based access control if required by route
-   * 5. Check permission-based access control if required by route
-   * 6. Grant access if all checks pass
-   *
-   * @param context The execution context containing request/response
-   * @returns true if all security checks pass, throws AppHttpException otherwise
-   * @throws AppHttpException with descriptive localized error messages
-   */
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
 

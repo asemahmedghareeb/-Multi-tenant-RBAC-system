@@ -90,5 +90,8 @@
   "USER_EMAIL_NOT_VERIFIED": "Your email address has not been verified. Please verify your email address to access this resource",
   "USER_ACCOUNT_INACTIVE": "Your account is inactive. Please contact support if you believe this is an error",
   "INSUFFICIENT_PERMISSIONS": "You do not have the required permissions to access this resource. Please contact your administrator if you believe this is an error",
-  "INSUFFICIENT_ROLE": "Your user role does not have access to this resource. Please contact your administrator to request the necessary permissions"
+  "INSUFFICIENT_ROLE": "Your user role does not have access to this resource. Please contact your administrator to request the necessary permissions",
+  "MISSING_REFRESH_TOKEN": "Refresh token is missing. Please provide a refresh token in the x-refresh-token header or refreshToken field to refresh your access token",
+  "INVALID_OR_EXPIRED_REFRESH_TOKEN": "Your refresh token is invalid or has expired. Please log in again to obtain a new refresh token",
+  "REFRESH_TOKEN_NOT_FOUND": "The provided refresh token is not found in the system. It may have been revoked or invalidated. Please log in again"
 }

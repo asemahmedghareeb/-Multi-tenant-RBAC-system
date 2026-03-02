@@ -67,7 +67,7 @@ export class AuthService {
       `<p><b>${this.i18nService.t('messages.OTP_SIGNUP_MESSAGE', { args: { otp } })}</b></p>`,
     );
 
-    const token = await this.authHelper.newToken({
+    const tokenData = await this.authHelper.generateTokenPair({
       id: identitySaved._id.toString(),
       userType: identitySaved.type,
     });
@@ -79,7 +79,7 @@ export class AuthService {
     });
 
     return {
-      token,
+      ...tokenData,
       apiKey: apiKey.key,
     };
   }
@@ -99,11 +99,11 @@ export class AuthService {
       throw new AppHttpException(ErrorMessageEnum.WRONG_EMAIL_OR_PASSWORD);
     }
 
-    const token = await this.authHelper.newToken({
+    const tokenData = await this.authHelper.generateTokenPair({
       id: identity._id.toString(),
       userType: identity.type,
     });
-    return { token };
+    return tokenData;
   }
 
   @Transactional()
@@ -173,5 +173,29 @@ export class AuthService {
       this.i18nService.t('mail-subject.OTP_REQUEST'),
       `<p>${this.i18nService.t('messages.OTP_REQUEST_MESSAGE', { args: { otp } })}</p>`,
     );
+  }
+
+  /**
+   * Refresh access token using refresh token
+   * Exchanges a valid refresh token for a new access token
+   * The refresh token remains unchanged (not rotated)
+   */
+  @Transactional()
+  async refreshToken(refreshToken: string) {
+    // Validate the refresh token and get user identity
+    const identity = await this.authHelper.validateRefreshTokenAndGetUser(
+      refreshToken,
+    );
+
+    // Generate only new access token (keep refresh token unchanged)
+    const tokenData = await this.authHelper.generateAccessToken(
+      {
+        id: identity._id.toString(),
+        userType: identity.type,
+      },
+      identity._id.toString(),
+    );
+
+    return tokenData;
   }
 }

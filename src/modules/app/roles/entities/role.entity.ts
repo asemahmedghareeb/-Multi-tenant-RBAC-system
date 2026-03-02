@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Schema as MongooseSchema } from 'mongoose';
-import { Permission } from './permission.entity';
 import { GeneratePermissions } from 'src/common/decorators/generate-permissions.decorator';
 import { AppBaseEntity, SCHEMA_OPTIONS } from 'src/common/entities/app-base.entity';
 import { Organization } from '../../organization/entities/organization.entity';
@@ -13,7 +12,7 @@ export class Role extends AppBaseEntity {
   })
   name: {
     ar: string;
-    en: string;
+    en: string; 
   };
 
   @Prop({
@@ -24,13 +23,6 @@ export class Role extends AppBaseEntity {
 
   @Prop({ default: false })
   isSuperAdmin: boolean;
-
-  @Prop({
-    type: [MongooseSchema.Types.ObjectId],
-    ref: 'Permission',
-    default: [],
-  })
-  permissions: string[] | Permission[];
 }
 
 export type RoleDocument = Role;

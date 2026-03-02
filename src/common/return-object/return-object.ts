@@ -67,16 +67,16 @@ export class ReturnObject {
   };
 
   /**
-   * Returns role object with permissions
+   * Returns role object
+   * Note: Permissions are now managed through RolePermission table
+   * and are not included in this response. Use rolePermissionService.getPermissionsForRole()
+   * to fetch permissions for a specific role.
    */
   role = (role: Role) => {
     return {
       id: role._id,
       name: role.name,
       isSuperAdmin: role.isSuperAdmin || false,
-      permissions: Array.isArray(role.permissions)
-        ? role.permissions.map((permission: any) => this.permission(permission))
-        : [],
       createdAt: role.createdAt,
     };
   };

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { getRegisteredPermissionEntities } from 'src/common/decorators/generate-permissions.decorator';
 import { Permission, PermissionDocument } from '../entities/permission.entity';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
@@ -8,13 +8,13 @@ import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { BaseRepository } from 'src/common/repositories/base-repository';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
-import { IdentityStatus } from '../../auth-base/identities/enums/identity-status.enum';
 import { User, UserDocument } from '../../users/entities/user.entity';
 import { ReturnObject } from 'src/common/return-object/return-object';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
+import { RolePermissionService } from './role-permission.service';
 
 @Injectable()
-export class PermissionsService implements OnModuleInit {
+export class PermissionsService {
   private readonly logger = new Logger(PermissionsService.name);
 
   constructor(
@@ -23,12 +23,8 @@ export class PermissionsService implements OnModuleInit {
     @InjectRepository(User)
     private readonly userRepository: BaseRepository<UserDocument>,
     private readonly returnObject: ReturnObject,
+    private readonly rolePermissionService: RolePermissionService,
   ) {}
-
-  async onModuleInit() {
-    await this.generatePermissions();
-    this.logger.log('Permission generation completed');
-  }
 
   @Transactional()
   async generatePermissions(): Promise<void> {
@@ -68,17 +64,11 @@ export class PermissionsService implements OnModuleInit {
         !validPermissionKeys.has(`${p.resource}:${p.action}`) &&
         !(p as any).organization,
     );
-
+ 
     // Delete obsolete permissions
     if (permissionsToDelete.length > 0) {
       const deleteIds = permissionsToDelete.map((p) => (p as any)._id);
       await this.permissionRepository.deleteMany({ _id: { $in: deleteIds } });
-
-      this.logger.warn(
-        `Removed ${permissionsToDelete.length} obsolete permissions:`,
-      );
-    } else {
-      this.logger.log('No obsolete permissions found');
     }
 
     // Bulk insert/update permissions using a single database operation
@@ -111,9 +101,6 @@ export class PermissionsService implements OnModuleInit {
       );
     }
 
-    this.logger.log(
-      `Total permissions processed: ${permissionsToCreate.length}`,
-    );
   }
 
   @Transactional()
@@ -159,6 +146,10 @@ export class PermissionsService implements OnModuleInit {
       ErrorMessageEnum.FORBIDDEN,
     );
 
+    // CASCADE DELETE: Remove all role-permission links when permission is deleted
+    // This ensures referential integrity - no orphaned permissions in roles
+    await this.rolePermissionService.cascadeDeleteByPermission(id);
+
     return this.permissionRepository.deleteOneOrFail({ _id: id });
   }
 
@@ -170,14 +161,7 @@ export class PermissionsService implements OnModuleInit {
       },
       ErrorMessageEnum.FORBIDDEN,
       {
-        populate: [
-          {
-            path: 'role',
-            populate: {
-              path: 'permissions',
-            },
-          },
-        ],
+        populate: [{ path: 'role' }],
       },
     );
 
@@ -185,14 +169,25 @@ export class PermissionsService implements OnModuleInit {
       return false;
     }
 
-    const hasPermission =
-      userDoc.role?.permissions.some(
-        (p: any) => p._id.toString() === dto.permissionId,
-      ) || false;
+    if (!userDoc.role) {
+      throw new AppHttpException(ErrorMessageEnum.INSUFFICIENT_PERMISSIONS);
+    }
+
+    // Get all permissions for the user's role from RolePermission table
+    const rolePermissions =
+      await this.rolePermissionService.getPermissionsForRole(
+        userDoc.role._id.toString(),
+      );
+
+    // Check if user's role has the required permission
+    const hasPermission = rolePermissions.some(
+      (rp: any) => rp.permission._id.toString() === dto.permissionId,
+    );
 
     if (!hasPermission) {
-       throw new AppHttpException(ErrorMessageEnum.INSUFFICIENT_PERMISSIONS);
+      throw new AppHttpException(ErrorMessageEnum.INSUFFICIENT_PERMISSIONS);
     }
+
     return hasPermission;
   }
 }

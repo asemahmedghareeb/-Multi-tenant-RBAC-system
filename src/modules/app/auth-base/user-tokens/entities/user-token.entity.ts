@@ -8,7 +8,10 @@ import { Identity } from '../../identities/entities/identity.entity';
 @Schema(SCHEMA_OPTIONS)
 export class UserToken extends AppBaseEntity {
   @Prop()
-  token: string;
+  accessToken: string;
+
+  @Prop()
+  refreshToken: string;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Identity' })
   user: string | Identity;
@@ -18,6 +21,8 @@ export type UserTokenDocument = UserToken;
 
 export const UserTokenSchema = SchemaFactory.createForClass(UserToken);
 
-UserTokenSchema.index({ token: 1 }, { unique: true });
+UserTokenSchema.index({ accessToken: 1 }, { unique: true, sparse: true });
+UserTokenSchema.index({ refreshToken: 1 }, { unique: true, sparse: true });
 UserTokenSchema.index({ user: 1 });
-UserTokenSchema.index({ user: 1, token: 1 });
+UserTokenSchema.index({ user: 1, accessToken: 1 });
+UserTokenSchema.index({ user: 1, refreshToken: 1 });

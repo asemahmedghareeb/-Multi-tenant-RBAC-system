@@ -15,6 +15,7 @@ import {
 } from '../../auth-base/identities/entities/identity.entity';
 import { Permission, PermissionDocument } from '../entities/permission.entity';
 import { ReturnObject } from 'src/common/return-object/return-object';
+import { RolePermissionService } from './role-permission.service';
 
 @Injectable()
 export class RolesService {
@@ -28,6 +29,7 @@ export class RolesService {
     @InjectRepository(Permission)
     private readonly permissionRepository: BaseRepository<PermissionDocument>,
     private readonly returnObject: ReturnObject,
+    private readonly rolePermissionService: RolePermissionService,
   ) {}
 
   async create(createRoleDto: AddRoleDto, identity: any) {
@@ -69,6 +71,9 @@ export class RolesService {
   }
 
   async delete(id: string, identity: any) {
+    // CASCADE DELETE: Remove all role-permission links when role is deleted
+    await this.rolePermissionService.cascadeDeleteByRole(id);
+
     return this.roleRepository.deleteOneOrFail(
       {
         _id: id,
@@ -99,12 +104,10 @@ export class RolesService {
         _id: addPermissionDto.id,
         organization: identity.organization._id,
       },
-      undefined,
-      {
-        populate: [{ path: 'permissions' }],
-      },
+      ErrorMessageEnum.FORBIDDEN,
     );
 
+    // Validate that all permissions exist and belong to the same organization
     const foundPermissions = await this.permissionRepository.model
       .find({
         _id: { $in: addPermissionDto.permissions },
@@ -116,8 +119,13 @@ export class RolesService {
       throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
-    role.permissions.push(...(addPermissionDto.permissions as any));
-    await role.save();
+    // Use RolePermissionService to assign permissions (many-to-many relationship)
+    await this.rolePermissionService.assignPermissionsToRole(
+      role._id.toString(),
+      addPermissionDto.permissions,
+      identity._id.toString(),
+    );
+
     return true;
   }
 
@@ -169,12 +177,10 @@ export class RolesService {
         _id: addPermissionDto.id,
         organization: identity.organization._id,
       },
-      undefined,
-      {
-        populate: [{ path: 'permissions' }],
-      },
+      ErrorMessageEnum.FORBIDDEN,
     );
 
+    // Validate that all permissions exist and belong to the same organization
     const foundPermissions = await this.permissionRepository.model
       .find({
         _id: { $in: addPermissionDto.permissions },
@@ -186,11 +192,12 @@ export class RolesService {
       throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
-    role.permissions = role.permissions.filter((p: Permission) => {
-      return !addPermissionDto.permissions.includes(p._id.toString());
-    }) as Permission[];
+    // Use RolePermissionService to remove permissions from the many-to-many relationship
+    await this.rolePermissionService.removePermissionsFromRole(
+      role._id.toString(),
+      addPermissionDto.permissions,
+    );
 
-    await role.save();
     return true;
   }
 }

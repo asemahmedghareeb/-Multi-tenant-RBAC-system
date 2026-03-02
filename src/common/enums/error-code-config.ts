@@ -110,6 +110,9 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.INVALID_TOKEN]: 401,
   [ErrorMessageEnum.TOKEN_NOT_FOUND_IN_SESSION]: 401,
   [ErrorMessageEnum.TOKEN_VERIFICATION_FAILED]: 401,
+  [ErrorMessageEnum.MISSING_REFRESH_TOKEN]: 401,
+  [ErrorMessageEnum.INVALID_OR_EXPIRED_REFRESH_TOKEN]: 401,
+  [ErrorMessageEnum.REFRESH_TOKEN_NOT_FOUND]: 401,
 
   // Auth Guard: API Key validation errors
   [ErrorMessageEnum.MISSING_API_KEY_HEADER]: 401,

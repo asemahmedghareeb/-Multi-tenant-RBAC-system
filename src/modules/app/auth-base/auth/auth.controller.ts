@@ -6,6 +6,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ResetPasswordDto } from './dto/reset-password';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { OrganizationSignInDto } from './dto/organization-signin.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiUtil } from 'src/common/utils/response-util';
 import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
 
@@ -43,5 +44,12 @@ export class AuthController {
   async requestOtp(@Body() data: RequestOtpDto) {
     await this.authService.requestOtp(data);
     return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'OTP sent successfully' });
+  }
+
+  @Post('refresh-token')
+  @ApiBody({ type: RefreshTokenDto })
+  async refreshToken(@Body() data: RefreshTokenDto) {
+    const result = await this.authService.refreshToken(data.refreshToken);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
   }
 }

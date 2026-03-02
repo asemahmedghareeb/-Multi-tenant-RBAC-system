@@ -13,6 +13,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { AuthHelper } from './helpers/auth.helper';
 import { AuthValidationService } from './helpers/auth-validation.service';
 import { RepositoryModule } from 'src/common/repositories/repository.module';
+import { RolesModule } from '../../roles/roles.module';
 
 @Global()
 @Module({
@@ -27,6 +28,7 @@ import { RepositoryModule } from 'src/common/repositories/repository.module';
     NodeMailerModule,
     jwtModule,
     ApiKeysModule,
+    RolesModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, AuthHelper, AuthValidationService, AuthGuard],
