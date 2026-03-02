@@ -19,7 +19,6 @@ import {
 import { Organization } from '../../../organization/entities/organization.entity';
 import { SubscriptionTiers } from '../../../api-keys/enums/subscription-tiers.enum';
 import { TIER_LIMITS } from '../../../api-keys/enums/subscription-limits.enum';
-import { Role } from '../../../roles/entities/role.entity';
 import { Permission } from '../../../roles/entities/permission.entity';
 import { UserType } from '../enums/user-type.enum';
 import { RolePermissionService } from '../../../roles/services/role-permission.service';
@@ -122,12 +121,10 @@ export class AuthValidationService {
       throw new AppHttpException(ErrorMessageEnum.USER_ACCOUNT_INACTIVE);
     }
 
-    // Fetch permissions from RolePermission table and attach to identity
     if (identity.role && this.rolePermissionService) {
       const rolePermissions = await this.rolePermissionService.getPermissionsForRole(
         (identity.role as any)._id.toString(),
       );
-      // Attach permissions to identity for auth guard to check
       (identity as any).permissions = rolePermissions.map((rp: any) => rp.permission);
     } else {
       (identity as any).permissions = [];
@@ -136,10 +133,6 @@ export class AuthValidationService {
     return identity;
   }
 
-  /**
-   * Validate refresh token and return user identity
-   * Verifies the refresh token is valid and exists in the session storage
-   */
   async validateRefreshToken(refreshToken: string): Promise<any> {
     let payload: any;
     try {
@@ -149,7 +142,6 @@ export class AuthValidationService {
       throw new AppHttpException(ErrorMessageEnum.INVALID_OR_EXPIRED_REFRESH_TOKEN);
     }
 
-    // Check if refresh token exists in the database
     const tokenRecord = await this.userTokenRepository.model.findOne({
       refreshToken,
     });
@@ -158,7 +150,6 @@ export class AuthValidationService {
       throw new AppHttpException(ErrorMessageEnum.REFRESH_TOKEN_NOT_FOUND);
     }
 
-    // Fetch the identity with all necessary information
     const identity = await this.identityRepository.model
       .findById(payload.id)
       .populate([
@@ -180,12 +171,10 @@ export class AuthValidationService {
       throw new AppHttpException(ErrorMessageEnum.USER_ACCOUNT_INACTIVE);
     }
 
-    // Fetch permissions from RolePermission table and attach to identity
     if (identity.role && this.rolePermissionService) {
       const rolePermissions = await this.rolePermissionService.getPermissionsForRole(
         (identity.role as any)._id.toString(),
       );
-      // Attach permissions to identity for auth guard to check
       (identity as any).permissions = rolePermissions.map((rp: any) => rp.permission);
     } else {
       (identity as any).permissions = [];
@@ -203,19 +192,15 @@ export class AuthValidationService {
       throw new AppHttpException(ErrorMessageEnum.INVALID_API_KEY);
     }
 
-    // Check usage limits based on subscription tier
     this.checkApiKeyUsageLimit(apiKey);
 
-    // Check if API key has expired
     if (this.isApiKeyExpired(apiKey.createdAt!)) {
       throw new AppHttpException(ErrorMessageEnum.API_KEY_EXPIRED);
     }
 
-    // Increment usage counter and save
     apiKey.usageCount += 1;
     await apiKey.save();
 
-    // Load organization's identity
     const identity = await this.identityRepository.model
       .findById((apiKey.organization as Organization).identity.toString())
       .populate([
@@ -232,12 +217,10 @@ export class AuthValidationService {
       throw new AppHttpException(ErrorMessageEnum.USER_ACCOUNT_INACTIVE);
     }
 
-    // Fetch permissions from RolePermission table and attach to identity
     if (identity.role && this.rolePermissionService) {
       const rolePermissions = await this.rolePermissionService.getPermissionsForRole(
         (identity.role as any)._id.toString(),
       );
-      // Attach permissions to identity for auth guard to check
       (identity as any).permissions = rolePermissions.map((rp: any) => rp.permission);
     } else {
       (identity as any).permissions = [];
@@ -318,7 +301,6 @@ export class AuthValidationService {
       return false;
     }
 
-    // Permissions are fetched and attached to identity from RolePermission table
     const userPermissions = (identity.permissions || []) as Permission[];
 
     const hasAllPermissions = requiredPermissions.every((required) => {

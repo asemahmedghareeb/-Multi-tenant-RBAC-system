@@ -5,12 +5,6 @@ import { BaseRepository } from 'src/common/repositories/base-repository';
 import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { Logger } from '@nestjs/common';
 
-/**
- * RolePermissionService
- *
- * Manages the many-to-many relationship between Role and Permission
- * Handles assignment, removal, and cascade delete operations
- */
 @Injectable()
 export class RolePermissionService {
   private readonly logger = new Logger(RolePermissionService.name);
@@ -20,10 +14,6 @@ export class RolePermissionService {
     private readonly rolePermissionRepository: BaseRepository<RolePermissionDocument>,
   ) {}
 
-  /**
-   * Assign a permission to a role
-   * Prevents duplicate assignments with unique index
-   */
   @Transactional()
   async assignPermissionToRole(
     roleId: string,
@@ -38,9 +28,6 @@ export class RolePermissionService {
     });
   }
 
-  /**
-   * Assign multiple permissions to a role
-   */
   @Transactional()
   async assignPermissionsToRole(
     roleId: string,
@@ -68,15 +55,11 @@ export class RolePermissionService {
 
     await this.rolePermissionRepository.model.bulkWrite(operations);
 
-    // Fetch and return the created/updated records
     return await this.rolePermissionRepository.model
       .find({ role: roleId, permission: { $in: permissionIds } })
       .exec();
   }
 
-  /**
-   * Remove a permission from a role
-   */
   @Transactional()
   async removePermissionFromRole(
     roleId: string,
@@ -88,9 +71,6 @@ export class RolePermissionService {
     });
   }
 
-  /**
-   * Remove multiple permissions from a role
-   */
   @Transactional()
   async removePermissionsFromRole(
     roleId: string,
@@ -102,10 +82,6 @@ export class RolePermissionService {
     });
   }
 
-  /**
-   * Get all permissions for a specific role
-   * This is called during auth validation
-   */
   async getPermissionsForRole(roleId: string): Promise<RolePermissionDocument[]> {
     return await this.rolePermissionRepository.model
       .find({ role: roleId })
@@ -113,10 +89,6 @@ export class RolePermissionService {
       .exec();
   }
 
-  /**
-   * Get all roles that have a specific permission
-   * Useful for permission-centric queries
-   */
   async getRolesWithPermission(permissionId: string): Promise<RolePermissionDocument[]> {
     return await this.rolePermissionRepository.model
       .find({ permission: permissionId })
@@ -124,11 +96,6 @@ export class RolePermissionService {
       .exec();
   }
 
-  /**
-   * CASCADE DELETE: Remove all role permissions when a permission is deleted
-   * This is the critical method that ensures data integrity
-   * Called by PermissionsService.deletePermission()
-   */
   @Transactional()
   async cascadeDeleteByPermission(permissionId: string): Promise<number> {
     const result = await this.rolePermissionRepository.deleteMany({
@@ -145,9 +112,6 @@ export class RolePermissionService {
     return deletedCount;
   }
 
-  /**
-   * CASCADE DELETE: Remove all role permissions when a role is deleted
-   */
   @Transactional()
   async cascadeDeleteByRole(roleId: string): Promise<number> {
     const result = await this.rolePermissionRepository.deleteMany({
@@ -164,9 +128,6 @@ export class RolePermissionService {
     return deletedCount;
   }
 
-  /**
-   * Clear all permissions for a role
-   */
   @Transactional()
   async clearRolePermissions(roleId: string): Promise<number> {
     const result = await this.rolePermissionRepository.deleteMany({
@@ -176,9 +137,6 @@ export class RolePermissionService {
     return typeof result === 'number' ? result : (result as any)?.deletedCount || 0;
   }
 
-  /**
-   * Check if a role has a specific permission
-   */
   async hasPermission(roleId: string, permissionId: string): Promise<boolean> {
     const record = await this.rolePermissionRepository.model.findOne({
       role: roleId,
@@ -188,9 +146,6 @@ export class RolePermissionService {
     return !!record;
   }
 
-  /**
-   * Get count of permissions for a role
-   */
   async getPermissionCountForRole(roleId: string): Promise<number> {
     return await this.rolePermissionRepository.model.countDocuments({
       role: roleId,

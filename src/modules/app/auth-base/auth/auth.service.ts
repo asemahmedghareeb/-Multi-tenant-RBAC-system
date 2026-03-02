@@ -175,19 +175,12 @@ export class AuthService {
     );
   }
 
-  /**
-   * Refresh access token using refresh token
-   * Exchanges a valid refresh token for a new access token
-   * The refresh token remains unchanged (not rotated)
-   */
   @Transactional()
   async refreshToken(refreshToken: string) {
-    // Validate the refresh token and get user identity
     const identity = await this.authHelper.validateRefreshTokenAndGetUser(
       refreshToken,
     );
 
-    // Generate only new access token (keep refresh token unchanged)
     const tokenData = await this.authHelper.generateAccessToken(
       {
         id: identity._id.toString(),

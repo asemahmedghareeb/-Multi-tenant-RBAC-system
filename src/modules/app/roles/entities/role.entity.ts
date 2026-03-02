@@ -29,10 +29,7 @@ export type RoleDocument = Role;
 
 export const RoleSchema = SchemaFactory.createForClass(Role);
 
-// All role queries are scoped to an organization
 RoleSchema.index({ organization: 1 });
-// Duplicate name check on role creation (unique per org)
 RoleSchema.index({ organization: 1, 'name.en': 1 }, { unique: true });
 RoleSchema.index({ organization: 1, 'name.ar': 1 }, { unique: true });
-// Used in auth guard to find the role with its permissions
 RoleSchema.index({ _id: 1, organization: 1 });

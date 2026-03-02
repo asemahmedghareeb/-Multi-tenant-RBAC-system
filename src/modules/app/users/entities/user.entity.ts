@@ -28,9 +28,6 @@ export type UserDocument = User;
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// Queried when listing users per organization
 UserSchema.index({ organization: 1 });
-// Duplicate check on user creation (email is unique per org)
 UserSchema.index({ organization: 1, email: 1 }, { unique: true });
-// Used for role lookups on users
 UserSchema.index({ role: 1 });

@@ -27,7 +27,6 @@ export type OrganizationDocument = Organization;
 export const OrganizationSchema = SchemaFactory.createForClass(Organization);
 
 OrganizationSchema.index({ identity: 1 }, { unique: true });
-// Used when filtering organizations by subscription tier
 OrganizationSchema.index({ subscriptionTier: 1 });
 
 OrganizationSchema.virtual('apiKeys', {

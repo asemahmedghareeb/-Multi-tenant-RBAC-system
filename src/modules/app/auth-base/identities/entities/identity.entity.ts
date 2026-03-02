@@ -58,9 +58,7 @@ export type IdentityDocument = Identity & IdentityMethods;
 
 export const IdentitySchema = SchemaFactory.createForClass(Identity);
 
-// Queried on every login and token validation
 IdentitySchema.index({ email: 1 }, { unique: true });
-// Filtered on every request in the auth guard
 IdentitySchema.index({ status: 1 });
 IdentitySchema.index({ isVerified: 1 });
 IdentitySchema.index({ type: 1 });

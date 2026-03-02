@@ -29,9 +29,6 @@ export class Permission extends AppBaseEntity {
 export type PermissionDocument = Permission;
 export const PermissionSchema = SchemaFactory.createForClass(Permission);
 
-// Permissions are always scoped to an organization
 PermissionSchema.index({ organization: 1 });
-// Auth guard checks permissions by resource + action
 PermissionSchema.index({ resource: 1, action: 1 });
-// Compound: unique permission per org (resource+action pair)
 PermissionSchema.index({ organization: 1, resource: 1, action: 1 }, { unique: true });

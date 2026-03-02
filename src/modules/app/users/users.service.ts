@@ -78,7 +78,6 @@ export class UsersService {
       ErrorMessageEnum.FORBIDDEN,
     );
 
-    // await this.identityRepository.deleteOne({ _id: user.identity });
     await this.userRepository.deleteOne({ _id: id });
     return true;
   }

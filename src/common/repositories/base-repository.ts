@@ -17,7 +17,6 @@ export interface QueryOptions {
 export class BaseRepository<T extends Document> {
   constructor(public readonly model: Model<T>) {}
 
-  /** Find a single entity, returns null if not found. */
   async findOne<R = T>(
     filter: Record<string, any>,
     options: QueryOptions = {},
@@ -33,7 +32,6 @@ export class BaseRepository<T extends Document> {
     return mapFn ? mapFn(result) : (result as unknown as R);
   }
 
-  /** Throw NotFoundException when an entity matching options does not exist. */
   async findOneOrFail(
     filter: Record<string, any>,
     errorMessage?: ErrorMessageEnum,
@@ -52,7 +50,6 @@ export class BaseRepository<T extends Document> {
     return mapFn ? mapFn(result) : result;
   }
 
-  /** Throw ForbiddenException when an entity matching options exists. */
   async findOneAndFail(
     filter: Record<string, any>,
     errorMessage?: ErrorMessageEnum,
@@ -71,7 +68,6 @@ export class BaseRepository<T extends Document> {
     }
   }
 
-  /** Find entities with pagination, sorting, relations (population), and selection. */
   async findPaginated<R = T>(
     filter: Record<string, any> = {},
     sort?: string | { [key: string]: SortOrder },
@@ -110,7 +106,6 @@ export class BaseRepository<T extends Document> {
     };
   }
 
-  /** Update multiple entities matching filter with input. */
   async updateMany(
     filter: Record<string, any>,
     update: UpdateQuery<T>,
@@ -123,7 +118,6 @@ export class BaseRepository<T extends Document> {
     return entities;
   }
 
-  /** Soft-delete via update (sets deletedAt and other input). */
   async softDeleteWithUpdate(
     filter: Record<string, any>,
     update: UpdateQuery<T>,
@@ -131,42 +125,35 @@ export class BaseRepository<T extends Document> {
     return this.updateMany(filter, { ...update, isDeleted: true });
   }
 
-  /** Create and save a single entity. */
   async createOne(input: Partial<T>, mapFn?: (item: T) => any): Promise<T> {
     const entity = new this.model(input);
     const savedEntity = await entity.save();
     return mapFn ? mapFn(savedEntity) : savedEntity;
   }
 
-  /** Create and save multiple entities. */
   async bulkCreate(input: Partial<T>[]): Promise<T[]> {
     const result = await this.model.insertMany(input);
     return result as unknown as T[];
   }
 
-  /** Update an existing model instance and save it. */
   async updateOneFromExistingModel(model: T, input: Partial<T>): Promise<T> {
     Object.assign(model, input);
     return model.save();
   }
 
-  /** Delete multiple entities and return affected count. */
   async deleteMany(filter: Record<string, any>): Promise<number> {
     const result = await this.model.deleteMany(filter).exec();
     return result.deletedCount || 0;
   }
 
-  /** Delete a single entity matching the filter. Returns the deleted document or null. */
   async deleteOne(filter: Record<string, any>): Promise<T | null> {
     return this.model.findOneAndDelete(filter).exec();
   }
 
-  /** Delete a single entity by its ID. Returns the deleted document or null. */
   async deleteById(id: string): Promise<T | null> {
     return this.model.findByIdAndDelete(id).exec();
   }
 
-  /** Delete a single entity or throw NotFoundException if it doesn't exist. */
   async deleteOneOrFail(
     filter: Record<string, any>,
     errorMessage?: ErrorMessageEnum,

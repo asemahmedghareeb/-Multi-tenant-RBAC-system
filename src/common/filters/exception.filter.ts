@@ -35,7 +35,6 @@ export class AppExceptionFilter implements ExceptionFilter {
     const request: Request = httpHost.getRequest();
     const lang = request.headers.lang as LangEnum;
 
-    // Localize the message using the error code enum
     const message = this.appHelperService.localize(
       `errors.${exception.errorMessageEnum}`,
       {},

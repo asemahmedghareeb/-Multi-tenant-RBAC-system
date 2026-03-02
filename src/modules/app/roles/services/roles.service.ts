@@ -71,7 +71,6 @@ export class RolesService {
   }
 
   async delete(id: string, identity: any) {
-    // CASCADE DELETE: Remove all role-permission links when role is deleted
     await this.rolePermissionService.cascadeDeleteByRole(id);
 
     return this.roleRepository.deleteOneOrFail(
@@ -107,7 +106,6 @@ export class RolesService {
       ErrorMessageEnum.FORBIDDEN,
     );
 
-    // Validate that all permissions exist and belong to the same organization
     const foundPermissions = await this.permissionRepository.model
       .find({
         _id: { $in: addPermissionDto.permissions },
@@ -119,7 +117,6 @@ export class RolesService {
       throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
-    // Use RolePermissionService to assign permissions (many-to-many relationship)
     await this.rolePermissionService.assignPermissionsToRole(
       role._id.toString(),
       addPermissionDto.permissions,
@@ -180,7 +177,6 @@ export class RolesService {
       ErrorMessageEnum.FORBIDDEN,
     );
 
-    // Validate that all permissions exist and belong to the same organization
     const foundPermissions = await this.permissionRepository.model
       .find({
         _id: { $in: addPermissionDto.permissions },
@@ -192,7 +188,6 @@ export class RolesService {
       throw new AppHttpException(ErrorMessageEnum.NOT_FOUND);
     }
 
-    // Use RolePermissionService to remove permissions from the many-to-many relationship
     await this.rolePermissionService.removePermissionsFromRole(
       role._id.toString(),
       addPermissionDto.permissions,

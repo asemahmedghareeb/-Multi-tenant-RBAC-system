@@ -46,7 +46,7 @@ export class AuthGuard implements CanActivate {
     }
 
     request.user = identity;
-
+    
     if (!authMetadata) {
       return true;
     }

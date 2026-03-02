@@ -96,7 +96,6 @@ export class ApiKeysService {
       throw new AppHttpException(ErrorMessageEnum.FORBIDDEN);
     }
 
-    // Check if this is the last API key of the organization
     const apiKeyCount = await this.apiKeyRepository.model.countDocuments({
       organization: apiKey.organization,
     });

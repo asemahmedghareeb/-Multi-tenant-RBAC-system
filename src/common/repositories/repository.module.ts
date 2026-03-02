@@ -11,14 +11,6 @@ export interface EntityDbModule extends DynamicModule {
   entity: Function;
 }
 
-/**
- * Replacement for raw MongooseModule.forFeature() in db module files.
- * Attaches the entity class onto the module so RepositoryModule can
- * infer it automatically — no need to pass entity names separately.
- *
- * Usage (in *.db.module.ts):
- *   export const usersDbModule = createDbModule(User, UserSchema);
- */
 export const createDbModule = (
   entity: Function,
   schema: any,
@@ -32,10 +24,6 @@ export const createDbModule = (
 
 @Module({})
 export class RepositoryModule {
-  /**
-   * Registers Mongoose models and creates repository providers for the given entities.
-   * Pass entity+schema pairs and the module handles MongooseModule.forFeature internally.
-   */
   static forFeature(entitySchemas: EntitySchema[]): DynamicModule {
     const mongooseModule = MongooseModule.forFeature(
       entitySchemas.map(({ entity, schema }) => ({
@@ -56,15 +44,6 @@ export class RepositoryModule {
     };
   }
 
-  /**
-   * Accepts db modules created with createDbModule() and wires repository
-   * providers automatically — no entity list needed.
-   *
-   * Usage:
-   *   imports: [
-   *     RepositoryModule.fromDbModules([usersDbModule, organizationDbModule])
-   *   ]
-   */
   static fromDbModules(dbModules: EntityDbModule[]): DynamicModule {
     const repositoryProviders = dbModules.map(({ entity }) =>
       createRepositoryProvider(entity),

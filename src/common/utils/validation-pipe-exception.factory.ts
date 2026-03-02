@@ -10,11 +10,9 @@ export const validationPipeExceptionFactory = (
   appHelperService?: AppHelperService,
   lang?: LangEnum,
 ) => {
-  // Throws a custom exception (AppHttpException) with a BAD_REQUEST_EXCEPTION error code.
   return new AppHttpException(
     ErrorMessageEnum.BAD_REQUEST_EXCEPTION,
     {
-      // Maps validation errors to a localized format.
       validationMessages: getValidationMessages(errors, appHelperService, lang),
     },
   );
@@ -32,7 +30,6 @@ const getValidationMessages = (
         errors: getValidationMessages(error.children, appHelperService, lang),
       };
     }
-    // Iterates over each validation constraint for the current error.
     Object.keys(error.constraints as object).forEach((constraint) => {
       if (
         !ValidationErrorMessageEnum[
@@ -41,14 +38,12 @@ const getValidationMessages = (
         !appHelperService
       )
         return;
-      // Translates the validation error message using the i18n service.
       (error.constraints as object)[constraint] = appHelperService?.localize(
         `validation-errors.${(error.constraints as object)[constraint]}`,
         {},
         lang,
       );
     });
-    // Returns the property name and translated constraints for the error.
     return {
       property: error?.property,
       constraints: error?.constraints,

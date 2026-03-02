@@ -15,13 +15,11 @@ export function Transactional() {
         const prop = this[key];
         if (!prop) continue;
 
-        // Direct Mongoose Model injected
         if (prop.db && typeof prop.db.transaction === 'function') {
           connection = prop.db;
           break;
         }
 
-        // BaseRepository wrapping a Mongoose Model
         if (
           prop.model &&
           prop.model.db &&

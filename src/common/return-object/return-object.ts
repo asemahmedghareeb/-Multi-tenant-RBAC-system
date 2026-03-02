@@ -10,9 +10,6 @@ import { User } from 'src/modules/app/users/entities/user.entity';
 export class ReturnObject {
   constructor() {}
 
-  /**
-   * Returns a clean user object with sensitive fields removed
-   */
   user = (user: User) => {
     return {
       id: user._id,
@@ -22,9 +19,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns a clean user with organization info
-   */
   userWithOrganization = (user: User, organization: any) => {
     return {
       id: user._id,
@@ -35,9 +29,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns identity object with safe fields
-   */
   identity = (identity: Identity) => {
     return {
       id: identity._id,
@@ -50,9 +41,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns full identity with role and user details
-   */
   identityWithRole = (identity: Identity) => {
     return {
       id: identity._id,
@@ -66,12 +54,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns role object
-   * Note: Permissions are now managed through RolePermission table
-   * and are not included in this response. Use rolePermissionService.getPermissionsForRole()
-   * to fetch permissions for a specific role.
-   */
   role = (role: Role) => {
     return {
       id: role._id,
@@ -81,9 +63,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns role without populated permissions to reduce payload
-   */
   roleBasic = (role: Role) => {
     return {
       id: role._id,
@@ -93,9 +72,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns permission object
-   */
   permission = (permission: Permission) => {
     return {
       id: permission._id,
@@ -107,9 +83,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns organization object
-   */
   organization = (organization: Organization) => {
     return {
       id: organization._id,
@@ -119,9 +92,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns organization with API keys count
-   */
   organizationWithStats = (
     organization: Organization,
     apiKeyCount?: number,
@@ -135,9 +105,6 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns API key object (without exposing full key)
-   */
   apiKey = (apiKey: ApiKey, includeFullKey: boolean = false) => {
     const response: any = {
       id: apiKey._id,
@@ -149,9 +116,6 @@ export class ReturnObject {
     return response;
   };
 
-  /**
-   * Returns full API key details (should only be returned once after creation)
-   */
   apiKeyFull = (apiKey: ApiKey) => {
     return {
       id: apiKey._id,
@@ -164,24 +128,15 @@ export class ReturnObject {
     };
   };
 
-  /**
-   * Returns API key list (masked)
-   */
   apiKeyList = (apiKeys: ApiKey[]) => {
     return apiKeys.map((apiKey) => this.apiKey(apiKey, false));
   };
 
-  /**
-   * Masks API key for security (shows first 8 and last 4 characters)
-   */
   private maskApiKey = (key: string): string => {
     if (!key || key.length < 12) return '***';
     return `${key.substring(0, 8)}...${key.substring(key.length - 4)}`;
   };
 
-  /**
-   * Returns paginated response format
-   */
   paginated = (items: any[], pageInfo: any) => {
     return {
       data: items,

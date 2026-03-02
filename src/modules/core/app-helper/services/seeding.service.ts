@@ -22,20 +22,6 @@ import { Transactional } from 'src/common/decorators/transactional.decorator';
 import { RolePermissionService } from '../../../app/roles/services/role-permission.service';
 import { PermissionsService } from '../../../app/roles/services/permissions.service';
 
-/**
- * Seeding Service
- *
- * Initializes the database with default data:
- * - Generates all system permissions
- * - Creates a super admin user
- * - Creates a super admin role
- * - Assigns all system permissions to super admin role
- * - Associates the role with the super admin user
- *
- * Configuration from environment variables:
- * - SUPER_ADMIN_EMAIL
- * - SUPER_ADMIN_PASSWORD
- */
 @Injectable()
 export class SeedingService implements OnModuleInit {
   private readonly logger = new Logger(SeedingService.name);
@@ -62,11 +48,7 @@ export class SeedingService implements OnModuleInit {
     }
   }
 
-  /**
-   * Main seeding function
-   * Generates system permissions and creates/updates super admin with all system permissions
-   * If super admin exists but new permissions were added, they will be assigned to the super admin role
-   */
+
   @Transactional()
   private async seedDatabase(): Promise<void> {
     const superAdminEmail = this.configService.get<string>('SUPER_ADMIN_EMAIL');
@@ -84,18 +66,15 @@ export class SeedingService implements OnModuleInit {
     this.logger.log('Starting database seeding...');
 
     try {
-      // 0. Generate system permissions
       await this.permissionsService.generatePermissions();
       this.logger.log('✓ System permissions generated');
 
-      // Check if super admin already exists
       const existingSuperAdmin = await this.identityRepository.model.findOne({
         email: superAdminEmail,
         isSuperAdmin: true,
       });
 
       if (existingSuperAdmin) {
-        // Super admin exists - update their role with any new permissions
         this.logger.log(
           'Super admin user already exists. Updating with new permissions...',
         );
@@ -105,31 +84,22 @@ export class SeedingService implements OnModuleInit {
         return;
       }
 
-      // Create new super admin
       this.logger.log('Creating new super admin...');
 
-      // 1. Create super admin identity
       const identity = await this.createSuperAdminIdentity(
         superAdminEmail,
         superAdminPassword,
       );
 
-      // 2. Create super admin organization
       const organization = await this.createSuperAdminOrganization(identity);
 
-      // 3. Create super admin role
       const superAdminRole = await this.createSuperAdminRole(organization);
 
-      // 4. Assign system permissions to super admin role (excluding organization-specific permissions)
       const permissions = await this.permissionRepository.model
         .find({ organization: { $exists: false } })
         .exec();
       await this.assignPermissionsToRole(superAdminRole._id, permissions);
-      this.logger.log(
-        `✓ Assigned ${permissions.length} system permissions to super admin role`,
-      );
 
-      // 5. Assign super admin role to identity
       identity.role = superAdminRole._id as any;
       await identity.save();
 
@@ -142,14 +112,9 @@ export class SeedingService implements OnModuleInit {
     }
   }
 
-  /**
-   * Update super admin role with new system permissions
-   * Finds all system permissions and assigns any new ones not already assigned
-   */
   private async updateSuperAdminPermissions(
     superAdmin: IdentityDocument,
   ): Promise<void> {
-    // Get the super admin's role
     const superAdminRole = await this.roleRepository.findOne({
       _id: superAdmin.role,
       isSuperAdmin: true,
@@ -162,19 +127,15 @@ export class SeedingService implements OnModuleInit {
       return;
     }
 
-    // Get all current system permissions (excluding organization-specific)
     const systemPermissions = await this.permissionRepository.model
       .find({ organization: { $exists: false } })
       .exec();
 
-    // Get current permissions assigned to the super admin role
     const assignedPermissions =
       await this.rolePermissionService.getPermissionsForRole(
         superAdminRole._id.toString(),
       );
 
-    // Find new permissions that aren't assigned yet
-    // Filter out null permissions (in case permission was deleted but RolePermission reference exists)
     const assignedPermissionIds = new Set(
       assignedPermissions
         .filter(
@@ -188,7 +149,6 @@ export class SeedingService implements OnModuleInit {
       .map((p) => p._id.toString());
 
     if (newPermissionIds.length > 0) {
-      // Assign new permissions to super admin role
       await this.assignPermissionsToRole(superAdminRole._id, newPermissionIds);
       this.logger.log(
         `✓ Assigned ${newPermissionIds.length} new system permissions to super admin role`,
@@ -198,9 +158,6 @@ export class SeedingService implements OnModuleInit {
     }
   }
 
-  /**
-   * Create super admin identity
-   */
   private async createSuperAdminIdentity(
     email: string,
     password: string,
@@ -218,9 +175,6 @@ export class SeedingService implements OnModuleInit {
     return identity;
   }
 
-  /**
-   * Create super admin organization
-   */
   private async createSuperAdminOrganization(
     identity: IdentityDocument,
   ): Promise<OrganizationDocument> {
@@ -233,9 +187,6 @@ export class SeedingService implements OnModuleInit {
     return organization;
   }
 
-  /**
-   * Create super admin role
-   */
   private async createSuperAdminRole(
     organization: OrganizationDocument,
   ): Promise<RoleDocument> {
@@ -251,11 +202,6 @@ export class SeedingService implements OnModuleInit {
     return superAdminRole;
   }
 
-  /**
-   * Assign permissions to a role via RolePermissionService
-   * Creates proper many-to-many relationships in RolePermission table
-   * Accepts either permission documents or permission ID strings
-   */
   private async assignPermissionsToRole(
     roleId: any,
     permissions: PermissionDocument[] | string[],
@@ -266,7 +212,6 @@ export class SeedingService implements OnModuleInit {
       return;
     }
 
-    // Check if input is PermissionDocument[] or string[]
     if (typeof permissions[0] === 'string') {
       permissionIds = permissions as string[];
     } else {
@@ -275,11 +220,10 @@ export class SeedingService implements OnModuleInit {
       );
     }
 
-    // Use RolePermissionService to create many-to-many relationships
     await this.rolePermissionService.assignPermissionsToRole(
       roleId.toString(),
       permissionIds,
-      'system', // assignedBy
+      'system',
     );
   }
 }

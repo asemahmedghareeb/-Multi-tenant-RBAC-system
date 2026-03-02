@@ -30,16 +30,13 @@ export class PermissionsService {
   async generatePermissions(): Promise<void> {
     const permissionsToCreate: Array<{ resource: string; action: string }> = [];
 
-    // Get all entities dynamically from the registry
     const registeredEntities = getRegisteredPermissionEntities();
 
     for (const { entity, permissionEnum } of registeredEntities) {
       const entityName = entity.name;
 
-      // Convert entity name to lowercase resource name (e.g., User -> user)
       const resourceName = entityName.toLowerCase();
 
-      // Generate permissions for each action in the enum
       for (const action of Object.values(permissionEnum)) {
         permissionsToCreate.push({
           resource: resourceName,
@@ -52,26 +49,21 @@ export class PermissionsService {
       .find()
       .exec();
 
-    // Create a Set of current valid permission keys for quick lookup
     const validPermissionKeys = new Set(
       permissionsToCreate.map((p) => `${p.resource}:${p.action}`),
     );
 
-    // Find permissions to delete (exist in DB but not in current entities)
-    // Skip permissions that belong to an organization (have an organization id)
     const permissionsToDelete = existingPermissions.filter(
       (p) =>
         !validPermissionKeys.has(`${p.resource}:${p.action}`) &&
         !(p as any).organization,
     );
  
-    // Delete obsolete permissions
     if (permissionsToDelete.length > 0) {
       const deleteIds = permissionsToDelete.map((p) => (p as any)._id);
       await this.permissionRepository.deleteMany({ _id: { $in: deleteIds } });
     }
 
-    // Bulk insert/update permissions using a single database operation
     if (permissionsToCreate.length > 0) {
       const bulkOps = permissionsToCreate.map((permission) => {
         const permissionName = `${permission.resource}:${permission.action}`;
@@ -146,8 +138,6 @@ export class PermissionsService {
       ErrorMessageEnum.FORBIDDEN,
     );
 
-    // CASCADE DELETE: Remove all role-permission links when permission is deleted
-    // This ensures referential integrity - no orphaned permissions in roles
     await this.rolePermissionService.cascadeDeleteByPermission(id);
 
     return this.permissionRepository.deleteOneOrFail({ _id: id });
@@ -173,13 +163,11 @@ export class PermissionsService {
       throw new AppHttpException(ErrorMessageEnum.INSUFFICIENT_PERMISSIONS);
     }
 
-    // Get all permissions for the user's role from RolePermission table
     const rolePermissions =
       await this.rolePermissionService.getPermissionsForRole(
         userDoc.role._id.toString(),
       );
 
-    // Check if user's role has the required permission
     const hasPermission = rolePermissions.some(
       (rp: any) => rp.permission._id.toString() === dto.permissionId,
     );

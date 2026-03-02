@@ -69,7 +69,6 @@ export class RolesController {
     @Param('id', ParseObjectIdPipe) id: string,
     @CurrentUser() identity: any,
   ) {
-    // Validate that the role belongs to the user's organization
     await this.rolesService.findOne(id, identity);
 
     const rolePermissions = await this.rolePermissionService.getPermissionsForRole(id);
@@ -84,7 +83,6 @@ export class RolesController {
     @Param('permissionId', ParseObjectIdPipe) permissionId: string,
     @CurrentUser() identity: any,
   ) {
-    // Validate that the role belongs to the user's organization
     await this.rolesService.findOne(id, identity);
 
     const hasPermission = await this.rolePermissionService.hasPermission(id, permissionId);

@@ -1,10 +1,6 @@
 import { ErrorMessageEnum } from './error-message.enum';
 
-/**
- * Maps ErrorMessageEnum to HTTP status codes
- */
 export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
-  // Standard errors
   [ErrorMessageEnum.NO_CONTENT]: 204,
   [ErrorMessageEnum.MOVED_PERMANENTLY]: 301,
   [ErrorMessageEnum.FOUND]: 302,
@@ -22,7 +18,6 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.GATEWAY_TIMEOUT]: 504,
 
 
-  // Uploader errors
   [ErrorMessageEnum.INVALID_FILE_UPLOAD]: 400,
   [ErrorMessageEnum.FILE_TOO_LARGE]: 400,
   [ErrorMessageEnum.TOO_MANY_FILES]: 400,
@@ -33,7 +28,6 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.NO_FILE_PROVIDED]: 400,
   [ErrorMessageEnum.FILE_DOES_NOT_EXIST]: 404,
 
-  // Auth errors
   [ErrorMessageEnum.EMAIL_ALREADY_EXIST]: 409,
   [ErrorMessageEnum.VALID_VERIFICATION_CODE_EXIST]: 409,
   [ErrorMessageEnum.USER_DOES_NOT_EXIST]: 404,
@@ -71,20 +65,16 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.PASSWORD_RESET_NOT_ALLOWED]: 403,
   [ErrorMessageEnum.SAME_PASSWORD_ERROR]: 400,
 
-  // Notifications
   [ErrorMessageEnum.NOTIFICATION_ALREADY_MARKED_AS_SEEN]: 409,
   [ErrorMessageEnum.NOTIFICATION_RECEIVER_DOES_NOT_EXIST]: 404,
 
-  // Region
   [ErrorMessageEnum.COUNTRY_ALREADY_EXIST]: 409,
   [ErrorMessageEnum.INVALID_COUNTRY_CODE]: 400,
   [ErrorMessageEnum.COUNTY_DOES_NOT_EXIST]: 404,
 
-  // Payment
   [ErrorMessageEnum.PAYMENT_DOES_NOT_EXIST]: 404,
   [ErrorMessageEnum.CITY_DOES_NOT_EXIST]: 404,
 
-  // Other
   [ErrorMessageEnum.INVALID_USER_IDS]: 400,
   [ErrorMessageEnum.FAQ_DOES_NOT_EXIST]: 404,
   [ErrorMessageEnum.APP_CONTACT_DOES_NOT_EXIST]: 404,
@@ -99,12 +89,10 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.CANNOT_DELETE_LAST_API_KEY]: 400,
   [ErrorMessageEnum.USER_ALREADY_EXIST]: 409,
 
-  // API Key tier limits
   [ErrorMessageEnum.API_KEY_LIMIT_REACHED_FREE]: 403,
   [ErrorMessageEnum.API_KEY_LIMIT_REACHED_PRO]: 403,
   [ErrorMessageEnum.API_KEY_LIMIT_REACHED_ENTERPRISE]: 403,
 
-  // Auth Guard: Token validation errors
   [ErrorMessageEnum.MISSING_AUTHORIZATION_HEADER]: 401,
   [ErrorMessageEnum.INVALID_BEARER_TOKEN_FORMAT]: 400,
   [ErrorMessageEnum.INVALID_TOKEN]: 401,
@@ -114,7 +102,6 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.INVALID_OR_EXPIRED_REFRESH_TOKEN]: 401,
   [ErrorMessageEnum.REFRESH_TOKEN_NOT_FOUND]: 401,
 
-  // Auth Guard: API Key validation errors
   [ErrorMessageEnum.MISSING_API_KEY_HEADER]: 401,
   [ErrorMessageEnum.INVALID_API_KEY]: 401,
   [ErrorMessageEnum.API_KEY_EXPIRED]: 401,
@@ -122,12 +109,10 @@ export const ERROR_CODE_CONFIG: Record<ErrorMessageEnum, number> = {
   [ErrorMessageEnum.API_KEY_USAGE_LIMIT_EXCEEDED_PRO]: 429,
   [ErrorMessageEnum.API_KEY_USAGE_LIMIT_EXCEEDED_ENTERPRISE]: 429,
 
-  // Auth Guard: User identity errors
   [ErrorMessageEnum.USER_IDENTITY_NOT_FOUND]: 401,
   [ErrorMessageEnum.USER_EMAIL_NOT_VERIFIED]: 401,
   [ErrorMessageEnum.USER_ACCOUNT_INACTIVE]: 403,
 
-  // Auth Guard: Authorization errors
   [ErrorMessageEnum.INSUFFICIENT_PERMISSIONS]: 403,
   [ErrorMessageEnum.INSUFFICIENT_ROLE]: 403,
 };
