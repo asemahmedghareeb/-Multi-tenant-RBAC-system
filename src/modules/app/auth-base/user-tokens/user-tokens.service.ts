@@ -39,4 +39,18 @@ export class UserTokensService {
   async deleteMany(filter: { user: string }) {
     await this.userTokensRepository.deleteMany(filter);
   }
+
+  async verifyTokenInDatabase( token: string): Promise<boolean> {
+    try {
+      // Query the database to check if this token exists for this user
+      const userToken = await this.userTokensRepository.findOne({
+        accessToken: token,
+      });
+      
+      return !!userToken;
+    } catch (error) {
+      console.error('Error verifying token in database:', error);
+      return false;
+    }
+  }
 }

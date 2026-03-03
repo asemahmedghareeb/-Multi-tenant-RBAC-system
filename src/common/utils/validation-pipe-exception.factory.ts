@@ -10,12 +10,9 @@ export const validationPipeExceptionFactory = (
   appHelperService?: AppHelperService,
   lang?: LangEnum,
 ) => {
-  return new AppHttpException(
-    ErrorMessageEnum.BAD_REQUEST_EXCEPTION,
-    {
-      validationMessages: getValidationMessages(errors, appHelperService, lang),
-    },
-  );
+  return new AppHttpException(ErrorMessageEnum.BAD_REQUEST_EXCEPTION, {
+    validationMessages: getValidationMessages(errors, appHelperService, lang),
+  });
 };
 
 const getValidationMessages = (

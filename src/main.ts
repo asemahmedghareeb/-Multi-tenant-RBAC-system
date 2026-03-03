@@ -10,7 +10,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   mongoose.set('transactionAsyncLocalStorage', true);
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  
+
   const config = new DocumentBuilder()
     .setTitle('RBAC API')
     .setDescription('API for testing')
@@ -19,13 +19,15 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api-docs', app, document);
-  
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port, () => {
     const endTime = Date.now();
     const totalTime = endTime - startTime;
     console.log(`🚀 API documentation: http://localhost:${port}/api-docs`);
-    console.log(`⏱️  Total startup time: ${totalTime}ms (${(totalTime / 1000).toFixed(2)}s)`);
+    console.log(
+      `⏱️  Total startup time: ${totalTime}ms (${(totalTime / 1000).toFixed(2)}s)`,
+    );
   });
 }
 bootstrap();

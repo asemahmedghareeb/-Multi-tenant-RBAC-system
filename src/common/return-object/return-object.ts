@@ -144,3 +144,7 @@ export class ReturnObject {
     };
   };
 }
+//auth decorator
+//generatepermissions()
+//base repository
+//transactional decorator

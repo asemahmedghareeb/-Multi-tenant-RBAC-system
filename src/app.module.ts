@@ -20,6 +20,8 @@ import { ResponseSerializerInterceptor } from './common/interceptors/response-se
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { BullMQModule } from './modules/core/config/bullmq.module';
 import { ThrottlerConfigModule } from './modules/core/config/throttler.module';
+import { WebsocketsModule } from './modules/core/websockets/websockets.module';
+import { CronModule } from './modules/core/cron/cron.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { ThrottlerConfigModule } from './modules/core/config/throttler.module';
     jwtModule,
     BullMQModule,
     ThrottlerConfigModule,
+    WebsocketsModule,
+    CronModule,
     AuthModule,
     IdentitiesModule,
     OrganizationModule,

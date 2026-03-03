@@ -1,6 +1,6 @@
 import {
   Model,
-  Document,
+  Document, 
   UpdateQuery,
   PopulateOptions,
   SortOrder,
@@ -110,12 +110,8 @@ export class BaseRepository<T extends Document> {
     filter: Record<string, any>,
     update: UpdateQuery<T>,
   ): Promise<T[]> {
-    const entities = await this.model.find(filter).exec();
-    for (const entity of entities) {
-      Object.assign(entity, update);
-      await entity.save();
-    }
-    return entities;
+    await this.model.updateMany(filter, update).exec();
+    return this.model.find(filter).exec();
   }
 
   async softDeleteWithUpdate(
