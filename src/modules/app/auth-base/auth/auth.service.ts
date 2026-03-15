@@ -19,6 +19,7 @@ import { ResetPasswordDto } from './dto/reset-password';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { VerifyReason } from './enums/otp-verify-reason.enum';
 import { AuthHelper } from './helpers/auth.helper';
+import { UserTokensService } from '../user-tokens/user-tokens.service';
 import { InjectRepository } from 'src/common/decorators/inject-repository.decorator';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
@@ -33,6 +34,7 @@ export class AuthService {
     @InjectRepository(ApiKey)
     private readonly apiKeyRepository: BaseRepository<ApiKey>,
     private readonly authHelper: AuthHelper,
+    private readonly userTokensService: UserTokensService,
     private readonly mailerService: MailService,
     private readonly apiKeyGeneratorHelper: ApiKeyGeneratorHelper,
     private readonly i18nService: I18nService,
@@ -177,9 +179,8 @@ export class AuthService {
 
   @Transactional()
   async refreshToken(refreshToken: string) {
-    const identity = await this.authHelper.validateRefreshTokenAndGetUser(
-      refreshToken,
-    );
+    const identity =
+      await this.authHelper.validateRefreshTokenAndGetUser(refreshToken);
 
     const tokenData = await this.authHelper.generateAccessToken(
       {
@@ -190,5 +191,23 @@ export class AuthService {
     );
 
     return tokenData;
+  }
+
+  /**
+   * Sign out from current device/session
+   * Deletes the current access token
+   */
+  @Transactional()
+  async signOut(userId: string, accessToken: string): Promise<boolean> {
+    return await this.userTokensService.signOutFromDevice(userId, accessToken);
+  }
+
+  /**
+   * Sign out from all devices/sessions
+   * Deletes all tokens for the user
+   */
+  @Transactional()
+  async signOutFromAllDevices(userId: string): Promise<boolean> {
+    return await this.userTokensService.signOutFromAllDevices(userId);
   }
 }

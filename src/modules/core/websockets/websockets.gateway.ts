@@ -14,7 +14,6 @@ import { JwtService } from '@nestjs/jwt';
 import { WebsocketsService } from './websockets.service';
 import { WsJwtGuard } from './guards/ws-jwt.guard';
 import { WsThrottlerGuard } from './guards/ws-throttler.guard';
-import { WsMessageValidationInterceptor } from './interceptors/ws-message-validation.interceptor';
 import { UserTokensService } from 'src/modules/app/auth-base/user-tokens/user-tokens.service';
 import { AppHttpException } from 'src/common/exceptions/app-http.exception';
 import { ErrorMessageEnum } from 'src/common/enums/error-message.enum';
@@ -94,7 +93,6 @@ export class WebsocketsGateway
   }
 
   @UseGuards(WsJwtGuard, WsThrottlerGuard)
-  @UseInterceptors(WsMessageValidationInterceptor)
   @SubscribeMessage('message')
   handleMessage(
     @ConnectedSocket() client: Socket,

@@ -9,7 +9,7 @@ interface AuthenticatedClient {
 
 @Injectable()
 export class WebsocketsService {
-  public connectedClients = new Map<string, AuthenticatedClient>();
+  public connectedClients = new Map<string, AuthenticatedClient>(); // socketId -> AuthenticatedClient
   public userSockets = new Map<string, Set<string>>(); // userId -> Set of socketIds
 
   handleConnection(client: Socket, userId: string): void {
@@ -49,11 +49,7 @@ export class WebsocketsService {
   }
 
   handleMessage(client: Socket, data: any, userId: string): void {
-  
-    console.log(
-      `Message from user ${userId} client (${client.id}):`,
-      data,
-    );
+    console.log(`Message from user ${userId} client (${client.id}):`, data);
     // Handle message logic here
   }
 

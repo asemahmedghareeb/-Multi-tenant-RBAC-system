@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { OrganizationSignupDto } from './dto/organization-signup.dto';
 import { ApiBody } from '@nestjs/swagger';
@@ -7,8 +7,11 @@ import { ResetPasswordDto } from './dto/reset-password';
 import { RequestOtpDto } from './dto/request-otp.dto';
 import { OrganizationSignInDto } from './dto/organization-signin.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { SignOutDto } from './dto/signout.dto';
 import { ApiUtil } from 'src/common/utils/response-util';
 import { ResponseMessageEnum } from 'src/common/enums/response-message.enum';
+import { Auth } from './decorators/auth.decorator';
+import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -31,19 +34,25 @@ export class AuthController {
   @Post('verify-otp')
   async verifyOtp(@Body() data: VerifyOtpDto) {
     await this.authService.verifyOtp(data);
-    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'OTP verified successfully' });
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, {
+      message: 'OTP verified successfully',
+    });
   }
 
   @Post('reset-password')
   async resetPassword(@Body() data: ResetPasswordDto) {
     await this.authService.resetPassword(data);
-    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'Password reset successfully' });
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, {
+      message: 'Password reset successfully',
+    });
   }
 
   @Post('request-otp')
   async requestOtp(@Body() data: RequestOtpDto) {
     await this.authService.requestOtp(data);
-    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, { message: 'OTP sent successfully' });
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, {
+      message: 'OTP sent successfully',
+    });
   }
 
   @Post('refresh-token')
@@ -51,5 +60,19 @@ export class AuthController {
   async refreshToken(@Body() data: RefreshTokenDto) {
     const result = await this.authService.refreshToken(data.refreshToken);
     return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS, result);
+  }
+
+  @Post('signout')
+  @Auth()
+  async signOut(@CurrentUser() identity: any, @Body() data: SignOutDto) {
+    await this.authService.signOut(identity.id, data.accessToken);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS);
+  }
+
+  @Post('signout-all-devices')
+  @Auth()
+  async signOutFromAllDevices(@CurrentUser() identity: any) {
+    await this.authService.signOutFromAllDevices(identity.id);
+    return ApiUtil.formatResponse(200, ResponseMessageEnum.SUCCESS);
   }
 }

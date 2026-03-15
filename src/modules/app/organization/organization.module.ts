@@ -8,5 +8,6 @@ import { RepositoryModule } from 'src/common/repositories/repository.module';
   imports: [RepositoryModule.fromDbModules([organizationDbModule])],
   controllers: [OrganizationController],
   providers: [OrganizationService],
+  exports: [OrganizationService],
 })
 export class OrganizationModule {}
